@@ -3,7 +3,7 @@ from concurrency_oracle import NoConcurrencyOracle, AlphaConcurrencyOracle, Heur
 from config import ConcurrencyOracleType
 
 from batch_processing_discovery import discover_batches_martins21
-from configu import Configuration
+from config import Configuration
 
 
 class BatchProcessingAnalysis:
