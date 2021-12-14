@@ -3,7 +3,7 @@ import subprocess
 
 import pandas as pd
 
-from config import Configuration
+from batch_config import Configuration
 
 
 def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -> pd.DataFrame:
@@ -35,6 +35,8 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     )
     # Read result event log
     event_log_with_batches = pd.read_csv(batched_log_path)
+    event_log_with_batches[config.log_ids.start_timestamp] = pd.to_datetime(event_log_with_batches[config.log_ids.start_timestamp], utc=True)
+    event_log_with_batches[config.log_ids.end_timestamp] = pd.to_datetime(event_log_with_batches[config.log_ids.end_timestamp], utc=True)
     # Remove created files
     os.remove(preprocessed_log_path)
     os.remove(batched_log_path)
