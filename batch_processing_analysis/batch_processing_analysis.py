@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import numpy as np
 import pandas as pd
 from concurrency_oracle import HeuristicsConcurrencyOracle
@@ -7,77 +9,94 @@ from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
 
 
-def _get_batch_last_enabled(batch_instance: pd.DataFrame, config: Configuration):
-    enabled_first_processed = []
-    for (case_key, case_batch) in batch_instance.groupby([config.log_ids.case]):
-        first_start = case_batch[config.log_ids.start_timestamp].min()
-        enabled_first_processed += case_batch.loc[
-            case_batch[config.log_ids.start_timestamp] == first_start,
-            config.log_ids.enabled_time
-        ].values.tolist()
-    return max(enabled_first_processed)
+class BatchProcessingAnalysis:
+    def __init__(self, event_log: pd.DataFrame, config: Configuration):
+        # Set event log
+        self.event_log = event_log
+        # Event log with batching information
+        self.batch_event_log = None
+        # Set configuration
+        self.config = config
+        # Set log IDs to ease access within class
+        self.log_ids = config.log_ids
+        # Set concurrency oracle
+        start_time_config = StartTimeConfiguration(
+            consider_parallelism=True
+        )
+        self.non_estimated_enabled_time = start_time_config.non_estimated_time
+        self.concurrency_oracle = HeuristicsConcurrencyOracle(self.event_log, start_time_config)
 
+    def analyze_batches(self):
+        # --- Discover batches --- #
+        self.batch_event_log = discover_batches_martins21(self.event_log, self.config)
+        # --- Discover activity instance enabled times --- #
+        for (batch_key, trace) in self.batch_event_log.groupby([self.log_ids.case]):
+            trace_start_time = trace[self.log_ids.start_time].min()
+            for index, event in trace.iterrows():
+                enabled_time = self.concurrency_oracle.enabled_since(trace, event)
+                if enabled_time != self.non_estimated_enabled_time:
+                    self.batch_event_log.loc[index, self.log_ids.enabled_time] = enabled_time
+                else:
+                    self.batch_event_log.loc[index, self.log_ids.enabled_time] = trace_start_time
+        # --- Calculate batching waiting times --- #
+        self._calculate_waiting_times()
+        # Discover activation rules
+        pass
 
-def analyze_batches(event_log: pd.DataFrame, config: Configuration):
-    ############################
-    # --- Discover batches --- #
-    ############################
-    batched_event_log = discover_batches_martins21(event_log, config)
-    ####################################################
-    # --- Discover activity instance enabled times --- #
-    ####################################################
-    concurrency_oracle = HeuristicsConcurrencyOracle(batched_event_log, StartTimeConfiguration())
-    for (batch_key, trace) in batched_event_log.groupby([config.log_ids.case]):
-        for index, event in trace.iterrows():
-            batched_event_log.loc[index, config.log_ids.enabled_time] = concurrency_oracle.enabled_since(trace, event)
-    ############################################
-    # --- Calculate batching waiting times --- #
-    ############################################
-    # Create empty batch time columns
-    batched_event_log[config.log_ids.batch_total_wt] = 0
-    batched_event_log[config.log_ids.batch_creation_wt] = 0
-    batched_event_log[config.log_ids.batch_ready_wt] = 0
-    batched_event_log[config.log_ids.batch_other_wt] = 0
-    # Task-based batches
-    task_batched_events = batched_event_log[
-        pd.isna(batched_event_log[config.log_ids.batch_subprocess_type]) &
-        ~pd.isna(batched_event_log[config.log_ids.batch_type])
-        ]
-    for (batch_key, batch_instance) in task_batched_events.groupby([config.log_ids.batch_number]):
-        batch_last_enabled = _get_batch_last_enabled(batch_instance, config)
-        batch_first_start = batch_instance[config.log_ids.start_timestamp].min()
-        # Ready WT: The time a particular case waits after the batch is created and not yet started to be processed.
-        ready_wt = batch_first_start - batch_last_enabled
-        batched_event_log[config.log_ids.batch_ready_wt] = np.where(batched_event_log[config.log_ids.batch_number] == batch_key,
-                                                                    ready_wt,
-                                                                    batched_event_log[config.log_ids.batch_ready_wt])
-        # Process each batch instance case
-        for (case_key, case_batch) in batch_instance.groupby([config.log_ids.case]):
-            case_first_event = case_batch.loc[
-                case_batch[config.log_ids.start_timestamp] == case_batch[config.log_ids.start_timestamp].min()]
-            # Total WT: The time a particular case waits before being processed.
-            total_wt = case_first_event[config.log_ids.start_timestamp] - case_first_event[config.log_ids.enabled_time]
-            batched_event_log[config.log_ids.batch_total_wt] = np.where((batched_event_log[config.log_ids.batch_number] == batch_key) &
-                                                                        (batched_event_log[config.log_ids.case] == case_key),
-                                                                        total_wt,
-                                                                        batched_event_log[config.log_ids.batch_total_wt])
-            # Creation WT: The time a particular case waits for the batch to be created.
-            creation_wt = batch_last_enabled - case_first_event[config.log_ids.enabled_time]
-            batched_event_log[config.log_ids.batch_creation_wt] = np.where((batched_event_log[config.log_ids.batch_number] == batch_key) &
-                                                                           (batched_event_log[config.log_ids.case] == case_key),
-                                                                           creation_wt,
-                                                                           batched_event_log[config.log_ids.batch_creation_wt])
-            # Other WT: The time a particular case waits for its order to be processed when other cases in a batch are being processed.
-            other_wt = case_first_event[config.log_ids.start_timestamp] - batch_first_start
-            batched_event_log[config.log_ids.batch_other_wt] = np.where((batched_event_log[config.log_ids.batch_number] == batch_key) &
-                                                                        (batched_event_log[config.log_ids.case] == case_key),
-                                                                        other_wt,
-                                                                        batched_event_log[config.log_ids.batch_other_wt])
-            print()
-    # Case-based batches
-    case_batched_events = batched_event_log[~pd.isna(batched_event_log[config.log_ids.batch_subprocess_type])]
-    for (batch_key, batch_instance) in case_batched_events.groupby([config.log_ids.batch_subprocess_number]):
-        print()
-    print()
-    # Discover activation rules
-    pass
+    def _calculate_waiting_times(self):
+        # Create empty batch time columns
+        self.batch_event_log[self.log_ids.batch_total_wt] = timedelta(0)
+        self.batch_event_log[self.log_ids.batch_creation_wt] = timedelta(0)
+        self.batch_event_log[self.log_ids.batch_ready_wt] = timedelta(0)
+        self.batch_event_log[self.log_ids.batch_other_wt] = timedelta(0)
+        # Task-based batches
+        task_based_batch_events = self.batch_event_log[
+            pd.isna(self.batch_event_log[self.log_ids.batch_subprocess_type]) &
+            ~pd.isna(self.batch_event_log[self.log_ids.batch_type])
+            ]
+        self._process_waiting_times(task_based_batch_events, self.log_ids.batch_number)
+        # Case-based batches
+        case_based_batch_events = self.batch_event_log[~pd.isna(self.batch_event_log[self.log_ids.batch_subprocess_type])]
+        self._process_waiting_times(case_based_batch_events, self.log_ids.batch_subprocess_number)
+
+    def _process_waiting_times(self, batch_event, batch_type_key):
+        for (batch_key, batch_instance) in batch_event.groupby([batch_type_key]):
+            batch_last_enabled = self._get_batch_last_enabled(batch_instance)
+            batch_first_start = batch_instance[self.log_ids.start_time].min()
+            # Ready WT: The time a particular case waits after the batch is created and not yet started to be processed.
+            ready_wt = batch_first_start - batch_last_enabled
+            self.batch_event_log[self.log_ids.batch_ready_wt] = np.where(self.batch_event_log[batch_type_key] == batch_key,
+                                                                         ready_wt,
+                                                                         self.batch_event_log[self.log_ids.batch_ready_wt])
+            # Process each batch instance case
+            for (case_key, case_batch) in batch_instance.groupby([self.log_ids.case]):
+                case_first_event = case_batch.loc[case_batch[self.log_ids.start_time] == case_batch[self.log_ids.start_time].min()].iloc[0]
+                # Total WT: The time a particular case waits before being processed.
+                total_wt = case_first_event[self.log_ids.start_time] - case_first_event[self.log_ids.enabled_time]
+                self.batch_event_log[self.log_ids.batch_total_wt] = np.where((self.batch_event_log[batch_type_key] == batch_key) &
+                                                                             (self.batch_event_log[self.log_ids.case] == case_key),
+                                                                             total_wt,
+                                                                             self.batch_event_log[self.log_ids.batch_total_wt])
+                # Creation WT: The time a particular case waits for the batch to be created.
+                creation_wt = batch_last_enabled - case_first_event[self.log_ids.enabled_time]
+                self.batch_event_log[self.log_ids.batch_creation_wt] = np.where(
+                    (self.batch_event_log[batch_type_key] == batch_key) &
+                    (self.batch_event_log[self.log_ids.case] == case_key),
+                    creation_wt,
+                    self.batch_event_log[self.log_ids.batch_creation_wt])
+                # Other WT: The time a particular case waits for its order to be processed when other cases in a batch are being processed.
+                other_wt = case_first_event[self.log_ids.start_time] - batch_first_start
+                self.batch_event_log[self.log_ids.batch_other_wt] = np.where((self.batch_event_log[batch_type_key] == batch_key) &
+                                                                             (self.batch_event_log[self.log_ids.case] == case_key),
+                                                                             other_wt,
+                                                                             self.batch_event_log[self.log_ids.batch_other_wt])
+
+    def _get_batch_last_enabled(self, batch_instance: pd.DataFrame):
+        enabled_first_processed = []
+        for (case_key, case_batch) in batch_instance.groupby([self.log_ids.case]):
+            first_start = case_batch[self.log_ids.start_time].min()
+            enabled_first_processed += case_batch.loc[
+                case_batch[self.log_ids.start_time] == first_start,
+                self.log_ids.enabled_time
+            ].values.tolist()
+        return max(enabled_first_processed)

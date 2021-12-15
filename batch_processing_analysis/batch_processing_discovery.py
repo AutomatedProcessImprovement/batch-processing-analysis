@@ -13,8 +13,8 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     preprocessed_event_log = event_log[[
         config.log_ids.case,
         config.log_ids.activity,
-        config.log_ids.start_timestamp,
-        config.log_ids.end_timestamp,
+        config.log_ids.start_time,
+        config.log_ids.end_time,
         config.log_ids.resource
     ]]
     # Export event log
@@ -35,8 +35,8 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     )
     # Read result event log
     event_log_with_batches = pd.read_csv(batched_log_path)
-    event_log_with_batches[config.log_ids.start_timestamp] = pd.to_datetime(event_log_with_batches[config.log_ids.start_timestamp], utc=True)
-    event_log_with_batches[config.log_ids.end_timestamp] = pd.to_datetime(event_log_with_batches[config.log_ids.end_timestamp], utc=True)
+    event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
+    event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
     # Remove created files
     os.remove(preprocessed_log_path)
     os.remove(batched_log_path)

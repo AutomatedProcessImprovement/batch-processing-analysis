@@ -2,8 +2,6 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-import pandas as pd
-
 
 def get_project_dir() -> Path:
     return Path(os.path.dirname(__file__)).parent
@@ -24,8 +22,8 @@ class EventLogIDs:
     """
     case: str = 'case_id'  # ID of the case instance of the process (trace)
     activity: str = 'Activity'  # Name of the executed activity in this activity instance
-    start_timestamp: str = 'start_time'  # Timestamp in which this activity instance started
-    end_timestamp: str = 'end_time'  # Timestamp in which this activity instance ended
+    start_time: str = 'start_time'  # Timestamp in which this activity instance started
+    end_time: str = 'end_time'  # Timestamp in which this activity instance ended
     resource: str = 'Resource'  # ID of the resource that executed this activity instance
     enabled_time: str = 'activity_instance_enabled_time'  # Enable time of this activity instance
     batch_number: str = 'batch_number'
@@ -44,10 +42,8 @@ class Configuration:
 
     Attributes:
         log_ids                     Identifiers for each key element (e.g. executed activity or resource).
-        non_estimated_time          Time to use as value when the enabled time cannot be calculated.
     """
     log_ids: EventLogIDs = EventLogIDs()
-    non_estimated_time: pd.Timestamp = pd.NaT
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
