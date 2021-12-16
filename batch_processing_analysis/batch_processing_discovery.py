@@ -105,6 +105,23 @@ def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, l
                 )
 
 
+def split_batches_with_different_type(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+    subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
+    for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
+        if len(batch_instance['batch_type'].unique()) > 1:
+            # More than one task-level batch type in a subprocess batch instance -> split removing subprocess batch info
+            event_log_with_batches['batch_subprocess_number'] = np.where(
+                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
+                np.NaN,
+                event_log_with_batches['batch_subprocess_number']
+            )
+            event_log_with_batches['batch_subprocess_type'] = np.where(
+                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
+                np.NaN,
+                event_log_with_batches['batch_subprocess_type']
+            )
+
+
 def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -> pd.DataFrame:
     preprocessed_log_path = config.PATH_BATCH_DETECTION_FOLDER.joinpath("preprocessed_event_log.csv.gz")
     batched_log_path = config.PATH_BATCH_DETECTION_FOLDER.joinpath("batched_event_log.csv")
@@ -139,13 +156,12 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     event_log_with_batches[config.log_ids.enabled_time] = pd.to_datetime(event_log_with_batches[config.log_ids.enabled_time], utc=True)
     event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
     event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
+    # Split subprocess batch instances with different task-level batch type
+    split_batches_with_different_type(event_log_with_batches, config.log_ids)
     # Remove batch cases with enable time before first batch start time (negative ready batch wt)
     remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
     # Split batch instances with different resources
     split_batch_with_different_resources(event_log_with_batches, config.log_ids)
-    # Split subprocess batch instances with different task-level batch type
-    # TODO preprocess to split batches with different task_level_type:
-    #   - Split them into different batches (each batch one type)
     # Remove all batch instances formed only by one case
     # TODO preprocess to remove batches composed of just one case:
     #   - Remove as batches all formed of just one case instance.
