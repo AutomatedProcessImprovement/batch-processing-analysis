@@ -25,7 +25,7 @@ class EventLogIDs:
     start_time: str = 'start_time'  # Timestamp in which this activity instance started
     end_time: str = 'end_time'  # Timestamp in which this activity instance ended
     resource: str = 'Resource'  # ID of the resource that executed this activity instance
-    enabled_time: str = 'activity_instance_enabled_time'  # Enable time of this activity instance
+    enabled_time: str = 'enabled_time'  # Enable time of this activity instance
     batch_number: str = 'batch_number'
     batch_type: str = 'batch_type'
     batch_subprocess_number: str = 'batch_subprocess_number'
