@@ -122,6 +122,43 @@ def split_batches_with_different_type(event_log_with_batches: pd.DataFrame, log_
             )
 
 
+def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+    # ---------------------------------- #
+    # --- Process subprocess batches --- #
+    # ---------------------------------- #
+    subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_number'])]
+    for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
+        if len(batch_instance[log_ids.case].unique()) == 1:
+            # Only one case in the batch instance -> remove batch info
+            event_log_with_batches['batch_subprocess_number'] = np.where(
+                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
+                np.NaN,
+                event_log_with_batches['batch_subprocess_number']
+            )
+            event_log_with_batches['batch_subprocess_type'] = np.where(
+                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
+                np.NaN,
+                event_log_with_batches['batch_subprocess_type']
+            )
+    # ----------------------------------- #
+    # --- Process single task batches --- #
+    # ----------------------------------- #
+    single_task_batch_events = event_log_with_batches[pd.isna(event_log_with_batches['batch_subprocess_type'])]
+    for (batch_instance_key, batch_instance) in single_task_batch_events.groupby(['batch_number']):
+        if len(batch_instance[log_ids.case].unique()) == 1:
+            # Only one case in the batch instance -> remove batch info
+            event_log_with_batches['batch_number'] = np.where(
+                event_log_with_batches['batch_number'] == batch_instance_key,
+                np.NaN,
+                event_log_with_batches['batch_number']
+            )
+            event_log_with_batches['batch_type'] = np.where(
+                event_log_with_batches['batch_number'] == batch_instance_key,
+                np.NaN,
+                event_log_with_batches['batch_type']
+            )
+
+
 def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -> pd.DataFrame:
     preprocessed_log_path = config.PATH_BATCH_DETECTION_FOLDER.joinpath("preprocessed_event_log.csv.gz")
     batched_log_path = config.PATH_BATCH_DETECTION_FOLDER.joinpath("batched_event_log.csv")
@@ -163,8 +200,7 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     # Split batch instances with different resources
     split_batch_with_different_resources(event_log_with_batches, config.log_ids)
     # Remove all batch instances formed only by one case
-    # TODO preprocess to remove batches composed of just one case:
-    #   - Remove as batches all formed of just one case instance.
+    remove_one_case_batch_instances(event_log_with_batches, config.log_ids)
     # Reformat batches to standard
     # TODO rename batch types to two columns "batch_number" and "batch_type":
     #   - Parallel
