@@ -8,7 +8,7 @@ from batch_config import Configuration, EventLogIDs
 from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time
 
 
-def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs) -> pd.DataFrame:
+def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
     found = True  # Flag to check for "wrong" cases until all of them are fine
     # ----------------------------------- #
     # --- Process single task batches --- #
@@ -33,7 +33,7 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
                     found = True  # A batch case with "wrong" enabled time has been found
             if found:
                 # Declare as a new batch instance those batch cases with "wrong" enabled time
-                new_batch_instance_key = event_log_with_batches['batch_number'].values.max() + 1
+                new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
                 event_log_with_batches['batch_number'] = np.where(
                     (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
                     (event_log_with_batches['batch_number'] == batch_instance_key),
@@ -61,15 +61,48 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
                     found = True  # A batch case with "wrong" enabled time has been found
             if found:
                 # Declare as a new batch instance those batch cases with "wrong" enabled time
-                new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].values.max() + 1
-                event_log_with_batches['batch_subprocess_number'] = event_log_with_batches.where(
+                new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
+                event_log_with_batches['batch_subprocess_number'] = np.where(
                     (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
                     (event_log_with_batches['batch_subprocess_number'] == batch_instance_key),
                     new_batch_instance_key,
                     event_log_with_batches['batch_subprocess_number']
                 )
-    # Return corrected event log
-    return event_log_with_batches
+
+
+def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+    # ----------------------------------- #
+    # --- Process single task batches --- #
+    # ----------------------------------- #
+    single_task_batch_events = event_log_with_batches[
+        pd.isna(event_log_with_batches['batch_subprocess_type']) & ~pd.isna(event_log_with_batches['batch_type'])
+        ]
+    for (batch_instance_key, batch_instance) in single_task_batch_events.groupby(['batch_number']):
+        if len(batch_instance[log_ids.resource].unique()) > 1:
+            # More than one resource in a single-task batch instance -> split
+            for (resource_key, batch_instance_by_resource) in batch_instance.groupby([log_ids.resource]):
+                new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
+                event_log_with_batches['batch_number'] = np.where(
+                    (event_log_with_batches[log_ids.resource] == resource_key) &
+                    (event_log_with_batches['batch_number'] == batch_instance_key),
+                    new_batch_instance_key,
+                    event_log_with_batches['batch_number']
+                )
+    # ---------------------------------- #
+    # --- Process subprocess batches --- #
+    # ---------------------------------- #
+    subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
+    for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
+        if len(batch_instance[log_ids.resource].unique()) > 1:
+            # More than one resource in a subprocess batch instance -> split
+            for (resource_key, batch_instance_by_resource) in batch_instance.groupby([log_ids.resource]):
+                new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
+                event_log_with_batches['batch_subprocess_number'] = np.where(
+                    (event_log_with_batches[log_ids.resource] == resource_key) &
+                    (event_log_with_batches['batch_subprocess_number'] == batch_instance_key),
+                    new_batch_instance_key,
+                    event_log_with_batches['batch_subprocess_number']
+                )
 
 
 def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -> pd.DataFrame:
@@ -107,10 +140,9 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
     event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
     # Remove batch cases with enable time before first batch start time (negative ready batch wt)
-    event_log_with_batches = remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
+    remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
     # Split batch instances with different resources
-    # TODO preprocess to split batches with different resources:
-    #   - Split them into different batches (each batch one resource)
+    split_batch_with_different_resources(event_log_with_batches, config.log_ids)
     # Split subprocess batch instances with different task-level batch type
     # TODO preprocess to split batches with different task_level_type:
     #   - Split them into different batches (each batch one type)
