@@ -7,6 +7,7 @@ from config import Configuration as StartTimeConfiguration
 
 from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
+from batch_utils import get_batch_instance_enabled_time, get_batch_instance_start_time
 
 
 class BatchProcessingAnalysis:
@@ -14,7 +15,7 @@ class BatchProcessingAnalysis:
         # Set event log
         self.event_log = event_log
         # Event log with batching information
-        self.batch_event_log = None
+        self.batch_event_log = event_log.copy()
         # Set configuration
         self.config = config
         # Set log IDs to ease access within class
@@ -26,9 +27,7 @@ class BatchProcessingAnalysis:
         self.non_estimated_enabled_time = start_time_config.non_estimated_time
         self.concurrency_oracle = HeuristicsConcurrencyOracle(self.event_log, start_time_config)
 
-    def analyze_batches(self):
-        # --- Discover batches --- #
-        self.batch_event_log = discover_batches_martins21(self.event_log, self.config)
+    def analyze_batches(self) -> pd.DataFrame:
         # --- Discover activity instance enabled times --- #
         for (batch_key, trace) in self.batch_event_log.groupby([self.log_ids.case]):
             trace_start_time = trace[self.log_ids.start_time].min()
@@ -38,10 +37,13 @@ class BatchProcessingAnalysis:
                     self.batch_event_log.loc[index, self.log_ids.enabled_time] = enabled_time
                 else:
                     self.batch_event_log.loc[index, self.log_ids.enabled_time] = trace_start_time
+        # --- Discover batches --- #
+        self.batch_event_log = discover_batches_martins21(self.batch_event_log, self.config)
         # --- Calculate batching waiting times --- #
         self._calculate_waiting_times()
         # Discover activation rules
-        pass
+        # TODO discover activation rules
+        return self.batch_event_log
 
     def _calculate_waiting_times(self):
         # Create empty batch time columns
@@ -61,8 +63,8 @@ class BatchProcessingAnalysis:
 
     def _process_waiting_times(self, batch_event, batch_type_key):
         for (batch_key, batch_instance) in batch_event.groupby([batch_type_key]):
-            batch_last_enabled = self._get_batch_last_enabled(batch_instance)
-            batch_first_start = batch_instance[self.log_ids.start_time].min()
+            batch_last_enabled = get_batch_instance_enabled_time(batch_instance, self.log_ids)
+            batch_first_start = get_batch_instance_start_time(batch_instance, self.log_ids)
             # Ready WT: The time a particular case waits after the batch is created and not yet started to be processed.
             ready_wt = batch_first_start - batch_last_enabled
             self.batch_event_log[self.log_ids.batch_ready_wt] = np.where(self.batch_event_log[batch_type_key] == batch_key,
@@ -90,13 +92,3 @@ class BatchProcessingAnalysis:
                                                                              (self.batch_event_log[self.log_ids.case] == case_key),
                                                                              other_wt,
                                                                              self.batch_event_log[self.log_ids.batch_other_wt])
-
-    def _get_batch_last_enabled(self, batch_instance: pd.DataFrame):
-        enabled_first_processed = []
-        for (case_key, case_batch) in batch_instance.groupby([self.log_ids.case]):
-            first_start = case_batch[self.log_ids.start_time].min()
-            enabled_first_processed += case_batch.loc[
-                case_batch[self.log_ids.start_time] == first_start,
-                self.log_ids.enabled_time
-            ].values.tolist()
-        return max(enabled_first_processed)

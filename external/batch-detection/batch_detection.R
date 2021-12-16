@@ -34,7 +34,7 @@ timestamp_format <- args[3]
 
 # Read CSV
 event_log <- read_csv(input_log_path)
-names(event_log) <- c("case_id", "activity", "start", "complete", "resource")
+names(event_log) <- c("case_id", "activity", "enabled", "start", "complete", "resource")
 event_log[["resource"]][is.na(event_log[["resource"]])] <- "NOT_SET"
 event_log[, "arrival"] <- NA
 
@@ -61,6 +61,6 @@ result_log <- detect_batching(task_log = event_log,
                               between_cases_seq_tolerated_gap = 0,
                               show_progress = F)
 
-names(result_log) <- c("case_id", "Activity" ,"start_time" ,"end_time" ,"Resource", "arrival",
+names(result_log) <- c("case_id", "Activity", "enabled_time", "start_time", "end_time", "Resource", "arrival",
                        "batch_number", "batch_type", "batch_subprocess_number", "batch_subprocess_type")
 write.csv(result_log, output_log_path, quote = FALSE, row.names = FALSE)
