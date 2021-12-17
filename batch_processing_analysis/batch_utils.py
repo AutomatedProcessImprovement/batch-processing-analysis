@@ -51,7 +51,7 @@ def get_batch_case_enabled_time(batch_case: pd.DataFrame, log_ids: EventLogIDs):
 
     :return: the enabled time of this batch case.
     """
-    first_start_time = batch_case[log_ids.start_time].min()
+    first_start_time = get_batch_case_start_time(batch_case, log_ids)
     return batch_case.loc[
         batch_case[log_ids.start_time] == first_start_time,
         log_ids.enabled_time

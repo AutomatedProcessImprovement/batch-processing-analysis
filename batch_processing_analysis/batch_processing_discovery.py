@@ -44,6 +44,7 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
     # --- Process subprocess batches --- #
     # ---------------------------------- #
     # While at least one case with "wrong" enabled times has been found, launch analysis
+    found = True
     while found:
         found = False
         # Get activity instances of single-task batches
@@ -126,43 +127,61 @@ def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_id
     # ---------------------------------- #
     # --- Process subprocess batches --- #
     # ---------------------------------- #
+    batch_numbers = []
     subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
     for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
         if len(batch_instance[log_ids.case].unique()) == 1:
-            # Only one case in the batch instance -> remove batch info
-            event_log_with_batches['batch_subprocess_type'] = np.where(
-                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
-                np.NaN,
-                event_log_with_batches['batch_subprocess_type']
-            )
-            event_log_with_batches['batch_subprocess_number'] = np.where(
-                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
-                np.NaN,
-                event_log_with_batches['batch_subprocess_number']
-            )
+            # Only one case in the batch instance -> save to remove batch info
+            batch_numbers += [batch_instance_key]
+    # If there are single-case batches, remove their batch info
+    if len(batch_numbers) > 0:
+        event_log_with_batches['batch_type'] = np.where(
+            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
+            np.NaN,
+            event_log_with_batches['batch_type']
+        )
+        event_log_with_batches['batch_number'] = np.where(
+            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
+            np.NaN,
+            event_log_with_batches['batch_number']
+        )
+        event_log_with_batches['batch_subprocess_type'] = np.where(
+            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
+            np.NaN,
+            event_log_with_batches['batch_subprocess_type']
+        )
+        event_log_with_batches['batch_subprocess_number'] = np.where(
+            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
+            np.NaN,
+            event_log_with_batches['batch_subprocess_number']
+        )
     # ----------------------------------- #
     # --- Process single task batches --- #
     # ----------------------------------- #
+    batch_numbers = []
     single_task_batch_events = event_log_with_batches[pd.isna(event_log_with_batches['batch_subprocess_type'])]
     for (batch_instance_key, batch_instance) in single_task_batch_events.groupby(['batch_number']):
         if len(batch_instance[log_ids.case].unique()) == 1:
-            # Only one case in the batch instance -> remove batch info
-            event_log_with_batches['batch_type'] = np.where(
-                event_log_with_batches['batch_number'] == batch_instance_key,
-                np.NaN,
-                event_log_with_batches['batch_type']
-            )
-            event_log_with_batches['batch_number'] = np.where(
-                event_log_with_batches['batch_number'] == batch_instance_key,
-                np.NaN,
-                event_log_with_batches['batch_number']
-            )
+            # Only one case in the batch instance -> save to remove batch info
+            batch_numbers += [batch_instance_key]
+    # If there are single-case batches, remove their batch info
+    if len(batch_numbers) > 0:
+        event_log_with_batches['batch_type'] = np.where(
+            event_log_with_batches['batch_number'].isin(batch_numbers),
+            np.NaN,
+            event_log_with_batches['batch_type']
+        )
+        event_log_with_batches['batch_number'] = np.where(
+            event_log_with_batches['batch_number'].isin(batch_numbers),
+            np.NaN,
+            event_log_with_batches['batch_number']
+        )
 
 
 def unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
     batch_id = 1
     event_log_with_batches[log_ids.batch_id] = np.NaN
-    # Single task batch instances
+    # Single-task batch instances
     single_task_batch_events = event_log_with_batches[
         pd.isna(event_log_with_batches['batch_subprocess_type']) & ~pd.isna(event_log_with_batches['batch_type'])
         ]
@@ -254,10 +273,10 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
     # Split subprocess batch instances with different task-level batch type
     split_batches_with_different_type(event_log_with_batches, config.log_ids)
-    # Remove batch cases with enable time before first batch start time (negative ready batch wt)
-    remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
     # Split batch instances with different resources
     split_batch_with_different_resources(event_log_with_batches, config.log_ids)
+    # Remove batch cases with enable time before first batch start time (negative ready batch wt)
+    remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
     # Remove all batch instances formed only by one case
     remove_one_case_batch_instances(event_log_with_batches, config.log_ids)
     # Reformat batches to standard
