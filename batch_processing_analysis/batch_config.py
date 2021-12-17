@@ -26,14 +26,21 @@ class EventLogIDs:
     end_time: str = 'end_time'  # Timestamp in which this activity instance ended
     resource: str = 'Resource'  # ID of the resource that executed this activity instance
     enabled_time: str = 'enabled_time'  # Enable time of this activity instance
-    batch_number: str = 'batch_number'
-    batch_type: str = 'batch_type'
-    batch_subprocess_number: str = 'batch_subprocess_number'
-    batch_subprocess_type: str = 'batch_subprocess_type'
+    batch_id: str = 'batch_instance_id'
+    batch_type: str = 'batch_instance_type'
     batch_total_wt: str = 'batch_total_wt'
     batch_creation_wt: str = 'batch_creation_wt'
     batch_ready_wt: str = 'batch_ready_wt'
     batch_other_wt: str = 'batch_other_wt'
+
+
+@dataclass
+class BatchType:
+    parallel: str = "Parallel"
+    task_sequential: str = "Sequential task-based"
+    task_concurrent: str = "Concurrent task-based"
+    case_sequential: str = "Sequential case-based"
+    case_concurrent: str = "Concurrent case-based"
 
 
 @dataclass
