@@ -28,7 +28,7 @@ class BatchProcessingAnalysis:
         self.concurrency_oracle = HeuristicsConcurrencyOracle(self.event_log, start_time_config)
 
     def analyze_batches(self) -> pd.DataFrame:
-        # --- Discover activity instance enabled times --- #
+        # Discover activity instance enabled times
         for (batch_key, trace) in self.batch_event_log.groupby([self.log_ids.case]):
             trace_start_time = trace[self.log_ids.start_time].min()
             for index, event in trace.iterrows():
@@ -37,12 +37,11 @@ class BatchProcessingAnalysis:
                     self.batch_event_log.loc[index, self.log_ids.enabled_time] = enabled_time
                 else:
                     self.batch_event_log.loc[index, self.log_ids.enabled_time] = trace_start_time
-        # --- Discover batches --- #
+        # Discover batches
         self.batch_event_log = discover_batches_martins21(self.batch_event_log, self.config)
-        # --- Calculate batching waiting times --- #
+        # Calculate batching waiting times
         self._calculate_waiting_times()
-        # Discover activation rules
-        # TODO discover activation rules
+        # Return event log with batches and waiting times
         return self.batch_event_log
 
     def _calculate_waiting_times(self):
