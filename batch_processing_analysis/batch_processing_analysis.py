@@ -51,23 +51,14 @@ class BatchProcessingAnalysis:
         self.batch_event_log[self.log_ids.batch_creation_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_ready_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_other_wt] = timedelta(0)
-        # Task-based batches
-        task_based_batch_events = self.batch_event_log[
-            pd.isna(self.batch_event_log[self.log_ids.batch_subprocess_type]) &
-            ~pd.isna(self.batch_event_log[self.log_ids.batch_type])
-            ]
-        self._process_waiting_times(task_based_batch_events, self.log_ids.batch_number)
-        # Case-based batches
-        case_based_batch_events = self.batch_event_log[~pd.isna(self.batch_event_log[self.log_ids.batch_subprocess_type])]
-        self._process_waiting_times(case_based_batch_events, self.log_ids.batch_subprocess_number)
-
-    def _process_waiting_times(self, batch_event, batch_type_key):
-        for (batch_key, batch_instance) in batch_event.groupby([batch_type_key]):
+        # Calculate waiting times
+        batch_events = self.batch_event_log[~pd.isna(self.batch_event_log[self.log_ids.batch_id])]
+        for (batch_key, batch_instance) in batch_events.groupby([self.log_ids.batch_id]):
             batch_last_enabled = get_batch_instance_enabled_time(batch_instance, self.log_ids)
             batch_first_start = get_batch_instance_start_time(batch_instance, self.log_ids)
             # Ready WT: The time a particular case waits after the batch is created and not yet started to be processed.
             ready_wt = batch_first_start - batch_last_enabled
-            self.batch_event_log[self.log_ids.batch_ready_wt] = np.where(self.batch_event_log[batch_type_key] == batch_key,
+            self.batch_event_log[self.log_ids.batch_ready_wt] = np.where(self.batch_event_log[self.log_ids.batch_id] == batch_key,
                                                                          ready_wt,
                                                                          self.batch_event_log[self.log_ids.batch_ready_wt])
             # Process each batch instance case
@@ -75,20 +66,20 @@ class BatchProcessingAnalysis:
                 case_first_event = case_batch.loc[case_batch[self.log_ids.start_time] == case_batch[self.log_ids.start_time].min()].iloc[0]
                 # Total WT: The time a particular case waits before being processed.
                 total_wt = case_first_event[self.log_ids.start_time] - case_first_event[self.log_ids.enabled_time]
-                self.batch_event_log[self.log_ids.batch_total_wt] = np.where((self.batch_event_log[batch_type_key] == batch_key) &
+                self.batch_event_log[self.log_ids.batch_total_wt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
                                                                              (self.batch_event_log[self.log_ids.case] == case_key),
                                                                              total_wt,
                                                                              self.batch_event_log[self.log_ids.batch_total_wt])
                 # Creation WT: The time a particular case waits for the batch to be created.
                 creation_wt = batch_last_enabled - case_first_event[self.log_ids.enabled_time]
                 self.batch_event_log[self.log_ids.batch_creation_wt] = np.where(
-                    (self.batch_event_log[batch_type_key] == batch_key) &
+                    (self.batch_event_log[self.log_ids.batch_id] == batch_key) &
                     (self.batch_event_log[self.log_ids.case] == case_key),
                     creation_wt,
                     self.batch_event_log[self.log_ids.batch_creation_wt])
                 # Other WT: The time a particular case waits for its order to be processed when other cases in a batch are being processed.
                 other_wt = case_first_event[self.log_ids.start_time] - batch_first_start
-                self.batch_event_log[self.log_ids.batch_other_wt] = np.where((self.batch_event_log[batch_type_key] == batch_key) &
+                self.batch_event_log[self.log_ids.batch_other_wt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
                                                                              (self.batch_event_log[self.log_ids.case] == case_key),
                                                                              other_wt,
                                                                              self.batch_event_log[self.log_ids.batch_other_wt])
