@@ -4,6 +4,16 @@ from batch_config import BatchType, EventLogIDs
 
 
 def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs) -> dict:
+    """
+    Given an event log with batches, batch types, and waiting times identified, return a report containing the waiting times per batch
+    grouped by batch type.
+
+    :param event_log: event log containing batch ID, batch type, and total/created/ready/other waiting times.
+    :param log_ids: IDs for each of the elements in the event log.
+
+    :return: a dictionary with a tuple of activities as key (identifying the activities forming the batch) and a dictionary with the batch
+    waiting times grouped by batch instance type.
+    """
     batches_report = {}
     batch_events = event_log[~pd.isna(event_log[log_ids.batch_id])]
     # For each batch instance
