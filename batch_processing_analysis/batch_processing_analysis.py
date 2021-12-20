@@ -50,6 +50,8 @@ class BatchProcessingAnalysis:
 
     def _calculate_waiting_times(self):
         # Create empty batch time columns
+        self.batch_event_log[self.log_ids.batch_pt] = timedelta(0)
+        self.batch_event_log[self.log_ids.batch_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_total_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_creation_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_ready_wt] = timedelta(0)
@@ -91,8 +93,8 @@ class BatchProcessingAnalysis:
                 self.batch_event_log[self.log_ids.batch_pt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
                                                                        (self.batch_event_log[self.log_ids.case] == case_key),
                                                                        batch_pt,
-                                                                       self.batch_event_log[self.log_ids.batch_total_wt])
+                                                                       self.batch_event_log[self.log_ids.batch_pt])
                 self.batch_event_log[self.log_ids.batch_wt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
                                                                        (self.batch_event_log[self.log_ids.case] == case_key),
                                                                        batch_wt,
-                                                                       self.batch_event_log[self.log_ids.batch_total_wt])
+                                                                       self.batch_event_log[self.log_ids.batch_wt])
