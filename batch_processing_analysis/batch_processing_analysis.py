@@ -7,10 +7,14 @@ from config import Configuration as StartTimeConfiguration
 
 from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
-from batch_utils import get_batch_instance_enabled_time, get_batch_instance_start_time
+from batch_utils import get_batch_instance_enabled_time, get_batch_instance_start_time, get_batch_case_processing_waiting_times
 
 
 class BatchProcessingAnalysis:
+    """
+    Discover the batches in an event log and calculate its waiting times (total, created, ready...).
+    """
+
     def __init__(self, event_log: pd.DataFrame, config: Configuration):
         # Set event log
         self.event_log = event_log
@@ -61,8 +65,8 @@ class BatchProcessingAnalysis:
                                                                          ready_wt,
                                                                          self.batch_event_log[self.log_ids.batch_ready_wt])
             # Process each batch instance case
-            for (case_key, case_batch) in batch_instance.groupby([self.log_ids.case]):
-                case_first_event = case_batch.loc[case_batch[self.log_ids.start_time] == case_batch[self.log_ids.start_time].min()].iloc[0]
+            for (case_key, batch_case) in batch_instance.groupby([self.log_ids.case]):
+                case_first_event = batch_case.loc[batch_case[self.log_ids.start_time] == batch_case[self.log_ids.start_time].min()].iloc[0]
                 # Total WT: The time a particular case waits before being processed.
                 total_wt = case_first_event[self.log_ids.start_time] - case_first_event[self.log_ids.enabled_time]
                 self.batch_event_log[self.log_ids.batch_total_wt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
@@ -82,3 +86,13 @@ class BatchProcessingAnalysis:
                                                                              (self.batch_event_log[self.log_ids.case] == case_key),
                                                                              other_wt,
                                                                              self.batch_event_log[self.log_ids.batch_other_wt])
+                # Overall PT and WT: Time since the enablement of the batch case until its end.
+                batch_pt, batch_wt = get_batch_case_processing_waiting_times(batch_case, self.log_ids)
+                self.batch_event_log[self.log_ids.batch_pt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
+                                                                       (self.batch_event_log[self.log_ids.case] == case_key),
+                                                                       batch_pt,
+                                                                       self.batch_event_log[self.log_ids.batch_total_wt])
+                self.batch_event_log[self.log_ids.batch_wt] = np.where((self.batch_event_log[self.log_ids.batch_id] == batch_key) &
+                                                                       (self.batch_event_log[self.log_ids.case] == case_key),
+                                                                       batch_wt,
+                                                                       self.batch_event_log[self.log_ids.batch_total_wt])

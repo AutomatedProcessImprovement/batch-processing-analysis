@@ -26,12 +26,14 @@ class EventLogIDs:
     end_time: str = 'end_time'  # Timestamp in which this activity instance ended
     resource: str = 'Resource'  # ID of the resource that executed this activity instance
     enabled_time: str = 'enabled_time'  # Enable time of this activity instance
-    batch_id: str = 'batch_instance_id'
-    batch_type: str = 'batch_instance_type'
-    batch_total_wt: str = 'batch_total_wt'
-    batch_creation_wt: str = 'batch_creation_wt'
-    batch_ready_wt: str = 'batch_ready_wt'
-    batch_other_wt: str = 'batch_other_wt'
+    batch_id: str = 'batch_instance_id'  # ID of the batch instance this activity instance belongs to, if any
+    batch_type: str = 'batch_instance_type'  # Type of the batch instance this activity instance belongs to, if any
+    batch_pt: str = 'batch_pt'  # Batch case processing time: time in which there is an activity of the batch case being processed
+    batch_wt: str = 'batch_wt'  # Batch case waiting time: time in which there are no activities of the batch case being processed
+    batch_total_wt: str = 'batch_total_wt'  # Batch case waiting time: time since the batch case enablement until its start
+    batch_creation_wt: str = 'batch_creation_wt'  # Batch case creation wt: time since batch case enablement until batch instance creation
+    batch_ready_wt: str = 'batch_ready_wt'  # Batch instance ready waiting time: time since the batch instance is created until its start
+    batch_other_wt: str = 'batch_other_wt'  # Batch case other waiting time: time since the batch instance start until the batch case start
 
 
 @dataclass
