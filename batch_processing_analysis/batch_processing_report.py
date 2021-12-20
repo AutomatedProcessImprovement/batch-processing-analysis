@@ -38,6 +38,8 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
             batch_case_activity = batch_case.iloc[0]
             # Update batch stats with this batch case stats
             batch_type_stats['num_cases'] += 1
+            batch_type_stats['processing_time'] += [batch_case_activity[log_ids.batch_pt]]
+            batch_type_stats['waiting_time'] += [batch_case_activity[log_ids.batch_wt]]
             batch_type_stats['total_wt'] += [batch_case_activity[log_ids.batch_total_wt]]
             batch_type_stats['creation_wt'] += [batch_case_activity[log_ids.batch_creation_wt]]
             batch_type_stats['ready_wt'] += [batch_case_activity[log_ids.batch_ready_wt]]
@@ -51,6 +53,8 @@ def _new_batch_stat_structure():
         BatchType.parallel: {
             'num_instances': 0,
             'num_cases': 0,
+            'processing_time': [],
+            'waiting_time': [],
             'total_wt': [],
             'creation_wt': [],
             'ready_wt': [],
@@ -59,6 +63,8 @@ def _new_batch_stat_structure():
         BatchType.task_sequential: {
             'num_instances': 0,
             'num_cases': 0,
+            'processing_time': [],
+            'waiting_time': [],
             'total_wt': [],
             'creation_wt': [],
             'ready_wt': [],
@@ -67,6 +73,8 @@ def _new_batch_stat_structure():
         BatchType.task_concurrent: {
             'num_instances': 0,
             'num_cases': 0,
+            'processing_time': [],
+            'waiting_time': [],
             'total_wt': [],
             'creation_wt': [],
             'ready_wt': [],
@@ -75,6 +83,8 @@ def _new_batch_stat_structure():
         BatchType.case_sequential: {
             'num_instances': 0,
             'num_cases': 0,
+            'processing_time': [],
+            'waiting_time': [],
             'total_wt': [],
             'creation_wt': [],
             'ready_wt': [],
@@ -83,6 +93,8 @@ def _new_batch_stat_structure():
         BatchType.case_concurrent: {
             'num_instances': 0,
             'num_cases': 0,
+            'processing_time': [],
+            'waiting_time': [],
             'total_wt': [],
             'creation_wt': [],
             'ready_wt': [],
