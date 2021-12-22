@@ -106,7 +106,7 @@ def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, l
                 )
 
 
-def split_batches_with_different_type(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+def split_batches_with_different_type(event_log_with_batches: pd.DataFrame):
     subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
     for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
         if len(batch_instance['batch_type'].unique()) > 1:
@@ -267,12 +267,11 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     # Read batch event log
     event_log_with_batches = pd.read_csv(batched_log_path)
     # Preprocess batch event log
-    event_log_with_batches.drop(columns=['arrival'], inplace=True)
     event_log_with_batches[config.log_ids.enabled_time] = pd.to_datetime(event_log_with_batches[config.log_ids.enabled_time], utc=True)
     event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
     event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
     # Split subprocess batch instances with different task-level batch type
-    split_batches_with_different_type(event_log_with_batches, config.log_ids)
+    split_batches_with_different_type(event_log_with_batches)
     # Split batch instances with different resources
     split_batch_with_different_resources(event_log_with_batches, config.log_ids)
     # Remove batch cases with enable time before first batch start time (negative ready batch wt)

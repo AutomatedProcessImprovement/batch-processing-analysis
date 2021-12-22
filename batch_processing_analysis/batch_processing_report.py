@@ -21,8 +21,7 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
         # Get the activities being part of it (batch_key)
         batch_activities = tuple(
             sorted(
-                batch_instance.groupby([log_ids.case]).get_group(batch_instance[log_ids.case].iloc[0])[
-                    log_ids.activity].values
+                batch_instance.groupby([log_ids.case]).get_group(batch_instance[log_ids.case].iloc[0])[log_ids.activity].values
             )
         )
         # Get the batch type
