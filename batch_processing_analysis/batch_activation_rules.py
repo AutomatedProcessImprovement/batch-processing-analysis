@@ -3,7 +3,7 @@ import enum
 import pandas as pd
 
 from batch_config import Configuration
-from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, _get_workload, _get_batch_activities
+from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities
 
 
 class ActivationRulesDiscoverer:
@@ -32,7 +32,7 @@ class ActivationRulesDiscoverer:
         features = []
         for (key, batch_instance) in batch_log.groupby([self.log_ids.batch_id]):
             # Common instants
-            activities = _get_batch_activities(batch_instance, self.log_ids)
+            activities = get_batch_activities(batch_instance, self.log_ids)
             batch_type = batch_instance[self.log_ids.batch_type].iloc[0]
             batch_instance_start = get_batch_instance_start_time(batch_instance, self.log_ids)
             batch_instance_first_enabled = (batch_instance
@@ -57,7 +57,7 @@ class ActivationRulesDiscoverer:
             day_of_month = batch_instance_start.day
             hour_of_day = batch_instance_start.hour
             minute_of_day = batch_instance_start.minute
-            workload = _get_workload(self.event_log, resource, batch_instance_start, self.log_ids)
+            workload = get_workload(self.event_log, resource, batch_instance_start, self.log_ids)
             features += [{
                 self.log_ids.batch_id: key,
                 self.log_ids.batch_type: batch_type,

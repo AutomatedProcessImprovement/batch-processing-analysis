@@ -6,7 +6,7 @@ from pandas import Timestamp
 from batch_config import EventLogIDs
 
 
-def _get_batch_activities(batch_events: pd.DataFrame, log_ids: EventLogIDs) -> tuple:
+def get_batch_activities(batch_events: pd.DataFrame, log_ids: EventLogIDs) -> tuple:
     """
     Get the set of activities of the batch.
 
@@ -129,7 +129,7 @@ def get_batch_case_processing_waiting_times(batch_case: pd.DataFrame, log_ids: E
     return processing_time, waiting_time
 
 
-def _get_workload(event_log, resource, instant, log_ids) -> int:
+def get_workload(event_log, resource, instant, log_ids) -> int:
     """
     Get the number of cases in which [resource] is working, or assigned, at the instant [instant].
 
