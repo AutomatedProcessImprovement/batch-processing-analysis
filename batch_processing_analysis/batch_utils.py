@@ -6,6 +6,22 @@ from pandas import Timestamp
 from batch_config import EventLogIDs
 
 
+def _get_batch_activities(batch_events: pd.DataFrame, log_ids: EventLogIDs) -> tuple:
+    """
+    Get the set of activities of the batch.
+
+    :param batch_events: activity instances of this batch.
+    :param log_ids: dict with the attribute IDs.
+
+    :return: tuple with the activities forming the batch.
+    """
+    return tuple(
+        sorted(
+            batch_events[log_ids.activity].unique()
+        )
+    )
+
+
 def get_batch_instance_start_time(batch_instance: pd.DataFrame, log_ids: EventLogIDs) -> Timestamp:
     """
     Get the start time of a batch instance, being this the start time of the first processed activity in this batch instance.
@@ -111,3 +127,23 @@ def get_batch_case_processing_waiting_times(batch_case: pd.DataFrame, log_ids: E
             processing -= 1
     # Return processing and waiting times
     return processing_time, waiting_time
+
+
+def _get_workload(event_log, resource, instant, log_ids) -> int:
+    """
+    Get the number of cases in which [resource] is working, or assigned, at the instant [instant].
+
+    :param event_log: the event log to search on.
+    :param resource: the resource to calculate the workload.
+    :param instant: the instant in which to calculate the workload.
+    :param log_ids: dict with the attribute IDs.
+
+    :return: the number of cases in which the resource is assigned to, at least, an activity.
+    """
+    return len(
+        event_log[
+            (event_log[log_ids.resource] == resource) &
+            (event_log[log_ids.enabled_time] <= instant) &
+            (instant <= event_log[log_ids.end_time])
+            ][log_ids.case].unique()
+    )

@@ -1,6 +1,7 @@
 import pandas as pd
 
 from batch_config import BatchType, EventLogIDs
+from batch_utils import _get_batch_activities
 
 
 def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs) -> dict:
@@ -19,11 +20,7 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
     # For each batch instance
     for (instance_key, batch_instance) in batch_events.groupby([log_ids.batch_id]):
         # Get the activities being part of it (batch_key)
-        batch_activities = tuple(
-            sorted(
-                batch_instance.groupby([log_ids.case]).get_group(batch_instance[log_ids.case].iloc[0])[log_ids.activity].values
-            )
-        )
+        batch_activities = _get_batch_activities(batch_instance, log_ids)
         # Get the batch type
         batch_type = batch_instance[log_ids.batch_type].iloc[0]
         # Retrieve stats for this batch type
