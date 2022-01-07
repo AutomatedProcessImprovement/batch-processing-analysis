@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from concurrency_oracle import HeuristicsConcurrencyOracle
 from config import Configuration as StartTimeConfiguration
+from config import EventLogIDs as StartTimeEventLogIDs
 
 from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
@@ -26,6 +27,14 @@ class BatchProcessingAnalysis:
         self.log_ids = config.log_ids
         # Set concurrency oracle
         start_time_config = StartTimeConfiguration(
+            log_ids=StartTimeEventLogIDs(
+                case=self.log_ids.case,
+                activity=self.log_ids.activity,
+                enabled_time=self.log_ids.enabled_time,
+                start_time=self.log_ids.start_time,
+                end_time=self.log_ids.end_time,
+                resource=self.log_ids.resource,
+            ),
             consider_parallelism=True
         )
         self.non_estimated_enabled_time = start_time_config.non_estimated_time
