@@ -40,7 +40,11 @@ def avg_duration(durations: list):
 
 
 def cte(processing_times: list, waiting_times: list):
-    return sum(processing_times, timedelta(0)) / (sum(processing_times, timedelta(0)) + sum(waiting_times, timedelta(0)))
+    if sum(processing_times, timedelta(0)) > timedelta(0):
+        value = sum(processing_times, timedelta(0)) / (sum(processing_times, timedelta(0)) + sum(waiting_times, timedelta(0)))
+    else:
+        value = 0
+    return value
 
 
 if __name__ == '__main__':
