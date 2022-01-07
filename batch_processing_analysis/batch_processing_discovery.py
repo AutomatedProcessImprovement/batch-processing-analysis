@@ -34,12 +34,11 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
             if found:
                 # Declare as a new batch instance those batch cases with "wrong" enabled time
                 new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
-                event_log_with_batches['batch_number'] = np.where(
+                event_log_with_batches.loc[
                     (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
                     (event_log_with_batches['batch_number'] == batch_instance_key),
-                    new_batch_instance_key,
-                    event_log_with_batches['batch_number']
-                )
+                    'batch_number'
+                ] = new_batch_instance_key
     # ---------------------------------- #
     # --- Process subprocess batches --- #
     # ---------------------------------- #
@@ -63,12 +62,11 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
             if found:
                 # Declare as a new batch instance those batch cases with "wrong" enabled time
                 new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
-                event_log_with_batches['batch_subprocess_number'] = np.where(
+                event_log_with_batches.loc[
                     (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
                     (event_log_with_batches['batch_subprocess_number'] == batch_instance_key),
-                    new_batch_instance_key,
-                    event_log_with_batches['batch_subprocess_number']
-                )
+                    'batch_subprocess_number'
+                ] = new_batch_instance_key
 
 
 def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
@@ -83,12 +81,11 @@ def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, l
             # More than one resource in a single-task batch instance -> split
             for (resource_key, batch_instance_by_resource) in batch_instance.groupby([log_ids.resource]):
                 new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
-                event_log_with_batches['batch_number'] = np.where(
+                event_log_with_batches.loc[
                     (event_log_with_batches[log_ids.resource] == resource_key) &
                     (event_log_with_batches['batch_number'] == batch_instance_key),
-                    new_batch_instance_key,
-                    event_log_with_batches['batch_number']
-                )
+                    'batch_number'
+                ] = new_batch_instance_key
     # ---------------------------------- #
     # --- Process subprocess batches --- #
     # ---------------------------------- #
@@ -98,12 +95,11 @@ def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, l
             # More than one resource in a subprocess batch instance -> split
             for (resource_key, batch_instance_by_resource) in batch_instance.groupby([log_ids.resource]):
                 new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
-                event_log_with_batches['batch_subprocess_number'] = np.where(
+                event_log_with_batches.loc[
                     (event_log_with_batches[log_ids.resource] == resource_key) &
                     (event_log_with_batches['batch_subprocess_number'] == batch_instance_key),
-                    new_batch_instance_key,
-                    event_log_with_batches['batch_subprocess_number']
-                )
+                    'batch_subprocess_number'
+                ] = new_batch_instance_key
 
 
 def split_batches_with_different_type(event_log_with_batches: pd.DataFrame):
@@ -111,16 +107,10 @@ def split_batches_with_different_type(event_log_with_batches: pd.DataFrame):
     for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
         if len(batch_instance['batch_type'].unique()) > 1:
             # More than one task-level batch type in a subprocess batch instance -> split removing subprocess batch info
-            event_log_with_batches['batch_subprocess_type'] = np.where(
+            event_log_with_batches.loc[
                 event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
-                np.NaN,
-                event_log_with_batches['batch_subprocess_type']
-            )
-            event_log_with_batches['batch_subprocess_number'] = np.where(
-                event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
-                np.NaN,
-                event_log_with_batches['batch_subprocess_number']
-            )
+                ['batch_subprocess_number', 'batch_subprocess_type']
+            ] = np.NaN
 
 
 def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
@@ -135,26 +125,10 @@ def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_id
             batch_numbers += [batch_instance_key]
     # If there are single-case batches, remove their batch info
     if len(batch_numbers) > 0:
-        event_log_with_batches['batch_type'] = np.where(
+        event_log_with_batches.loc[
             event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
-            np.NaN,
-            event_log_with_batches['batch_type']
-        )
-        event_log_with_batches['batch_number'] = np.where(
-            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
-            np.NaN,
-            event_log_with_batches['batch_number']
-        )
-        event_log_with_batches['batch_subprocess_type'] = np.where(
-            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
-            np.NaN,
-            event_log_with_batches['batch_subprocess_type']
-        )
-        event_log_with_batches['batch_subprocess_number'] = np.where(
-            event_log_with_batches['batch_subprocess_number'].isin(batch_numbers),
-            np.NaN,
-            event_log_with_batches['batch_subprocess_number']
-        )
+            ['batch_number', 'batch_type', 'batch_subprocess_number', 'batch_subprocess_type']
+        ] = np.NaN
     # ----------------------------------- #
     # --- Process single task batches --- #
     # ----------------------------------- #
@@ -166,16 +140,10 @@ def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_id
             batch_numbers += [batch_instance_key]
     # If there are single-case batches, remove their batch info
     if len(batch_numbers) > 0:
-        event_log_with_batches['batch_type'] = np.where(
+        event_log_with_batches.loc[
             event_log_with_batches['batch_number'].isin(batch_numbers),
-            np.NaN,
-            event_log_with_batches['batch_type']
-        )
-        event_log_with_batches['batch_number'] = np.where(
-            event_log_with_batches['batch_number'].isin(batch_numbers),
-            np.NaN,
-            event_log_with_batches['batch_number']
-        )
+            ['batch_number', 'batch_type']
+        ] = np.NaN
 
 
 def unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
@@ -186,20 +154,18 @@ def unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: Event
         pd.isna(event_log_with_batches['batch_subprocess_type']) & ~pd.isna(event_log_with_batches['batch_type'])
         ]
     for (batch_instance_key, batch_instance) in single_task_batch_events.groupby(['batch_number']):
-        event_log_with_batches[log_ids.batch_id] = np.where(
+        event_log_with_batches.loc[
             event_log_with_batches['batch_number'] == batch_instance_key,
-            batch_id,
-            event_log_with_batches[log_ids.batch_id]
-        )
+            log_ids.batch_id
+        ] = batch_id
         batch_id += 1
     # Subprocess batch instances
     subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_number'])]
     for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
-        event_log_with_batches[log_ids.batch_id] = np.where(
+        event_log_with_batches.loc[
             event_log_with_batches['batch_subprocess_number'] == batch_instance_key,
-            batch_id,
-            event_log_with_batches[log_ids.batch_id]
-        )
+            log_ids.batch_id
+        ] = batch_id
         batch_id += 1
     # Rename batch types
     event_log_with_batches[log_ids.batch_type] = np.where(
@@ -207,31 +173,26 @@ def unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: Event
         event_log_with_batches['batch_type'],
         event_log_with_batches['batch_subprocess_type']
     )
-    event_log_with_batches[log_ids.batch_type] = np.where(
+    event_log_with_batches.loc[
         event_log_with_batches[log_ids.batch_type] == "concurrent",
-        BatchType.task_concurrent,
-        event_log_with_batches[log_ids.batch_type]
-    )
-    event_log_with_batches[log_ids.batch_type] = np.where(
+        log_ids.batch_type
+    ] = BatchType.task_concurrent
+    event_log_with_batches.loc[
         event_log_with_batches[log_ids.batch_type] == "sequential",
-        BatchType.task_sequential,
-        event_log_with_batches[log_ids.batch_type]
-    )
-    event_log_with_batches[log_ids.batch_type] = np.where(
+        log_ids.batch_type
+    ] = BatchType.task_sequential
+    event_log_with_batches.loc[
         event_log_with_batches[log_ids.batch_type] == "concurrent case-based",
-        BatchType.case_concurrent,
-        event_log_with_batches[log_ids.batch_type]
-    )
-    event_log_with_batches[log_ids.batch_type] = np.where(
+        log_ids.batch_type
+    ] = BatchType.case_concurrent
+    event_log_with_batches.loc[
         event_log_with_batches[log_ids.batch_type] == "sequential case-based",
-        BatchType.case_sequential,
-        event_log_with_batches[log_ids.batch_type]
-    )
-    event_log_with_batches[log_ids.batch_type] = np.where(
+        log_ids.batch_type
+    ] = BatchType.case_sequential
+    event_log_with_batches.loc[
         event_log_with_batches[log_ids.batch_type] == "simultaneous",
-        BatchType.parallel,
-        event_log_with_batches[log_ids.batch_type]
-    )
+        log_ids.batch_type
+    ] = BatchType.parallel
     # Drop extra columns
     event_log_with_batches.drop(columns=['batch_number', 'batch_type', 'batch_subprocess_number', 'batch_subprocess_type'], inplace=True)
 
