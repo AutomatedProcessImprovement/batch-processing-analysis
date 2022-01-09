@@ -50,9 +50,12 @@ class Configuration:
     """Class storing the configuration parameters for the start time estimation.
 
     Attributes:
-        log_ids                     Identifiers for each key element (e.g. executed activity or resource).
+        log_ids                             Identifiers for each key element (e.g. executed activity or resource).
+        num_batch_ready_negative_events     Number of non-activating events to generate in the batch-ready interval to extract the batch
+                                            activation rules
     """
     log_ids: EventLogIDs = EventLogIDs()
+    num_batch_ready_negative_events: int = 3
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")

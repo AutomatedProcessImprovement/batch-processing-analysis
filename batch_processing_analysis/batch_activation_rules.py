@@ -3,7 +3,8 @@ import enum
 import pandas as pd
 
 from batch_config import Configuration
-from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities
+from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
+    get_batch_instance_enabled_time
 
 
 class ActivationRulesDiscoverer:
@@ -42,25 +43,33 @@ class ActivationRulesDiscoverer:
                     BatchOutcome.ACTIVATE
                 )
             ]
-            # Create non-activating instants and gets its features
+            # Get features of non-activating instants
+            non_activating_instants = []
             # 1 - X events in between the ready time of the batch
-            # TODO
+            batch_instance_enabled = get_batch_instance_enabled_time(batch_instance, self.log_ids)
+            non_activating_instants += pd.date_range(
+                start=batch_instance_enabled,
+                end=batch_instance_start,
+                periods=self.config.num_batch_ready_negative_events + 2
+            )[1:-1].tolist()
             # 2 - One event per enablement time of each case
-            for enablement_time in batch_instance.groupby([self.log_ids.case]).apply(
-                    lambda batch_case: get_batch_case_enabled_time(batch_case, self.log_ids)
-            ):
-                if enablement_time < batch_instance_start:
+            non_activating_instants += list(batch_instance.groupby([self.log_ids.case]).apply(
+                lambda batch_case: get_batch_case_enabled_time(batch_case, self.log_ids)
+            ))
+            # 3 - Obtain the features per instant
+            for instant in non_activating_instants:
+                if instant < batch_instance_start:
                     # Discard the batch cases enabled after the current instant, and then calculate the features of the remaining cases.
                     cases_enabled_before_instant = [
                         case_id
                         for case_id in batch_instance[self.log_ids.case].unique() if get_batch_case_enabled_time(
                             batch_instance[batch_instance[self.log_ids.case] == case_id],
                             self.log_ids
-                        ) <= enablement_time
+                        ) <= instant
                     ]
                     features += [
                         self._get_features(
-                            enablement_time,
+                            instant,
                             batch_instance[batch_instance[self.log_ids.case].isin(cases_enabled_before_instant)],
                             BatchOutcome.NOT_ACTIVATE
                         )
