@@ -34,6 +34,18 @@ def get_batch_instance_start_time(batch_instance: pd.DataFrame, log_ids: EventLo
     return batch_instance[log_ids.start_time].min()
 
 
+def get_batch_instance_end_time(batch_instance: pd.DataFrame, log_ids: EventLogIDs) -> Timestamp:
+    """
+    Get the end time of a batch instance, being this the end time of the last processed activity in this batch instance.
+
+    :param batch_instance: activity instances of this batch instance.
+    :param log_ids: dict with the attribute IDs.
+
+    :return: the end time of this batch instance.
+    """
+    return batch_instance[log_ids.end_time].max()
+
+
 def get_batch_instance_enabled_time(batch_instance: pd.DataFrame, log_ids: EventLogIDs) -> Timestamp:
     """
     Get the enabled time of the batch instance, being this the last of the enable times of its batch cases.
@@ -61,6 +73,18 @@ def get_batch_case_start_time(batch_case: pd.DataFrame, log_ids: EventLogIDs) ->
     return batch_case[log_ids.start_time].min()
 
 
+def get_batch_case_end_time(batch_case: pd.DataFrame, log_ids: EventLogIDs) -> Timestamp:
+    """
+    Get the end time of a batch case, being this the end time of the last processed activity in this batch case.
+
+    :param batch_case: activity instances of this batch case.
+    :param log_ids: dict with the attribute IDs.
+
+    :return: the end time of this batch case.
+    """
+    return batch_case[log_ids.end_time].max()
+
+
 def get_batch_case_enabled_time(batch_case: pd.DataFrame, log_ids: EventLogIDs) -> Timestamp:
     """
     Get the enabled time of a batch case, being this the enabled time of the first processed activity instance in the batch case.
@@ -75,6 +99,24 @@ def get_batch_case_enabled_time(batch_case: pd.DataFrame, log_ids: EventLogIDs) 
         batch_case[log_ids.start_time] == first_start_time,
         log_ids.enabled_time
     ].min()
+
+
+def get_naive_batch_case_processing_waiting_times(batch_case: pd.DataFrame, log_ids: EventLogIDs) -> (timedelta, timedelta):
+    """
+    Get the processing and waiting times of a batch case with a naive algorithm. Given the activity instances of a batch case, the
+    processing time is calculated as the time from the start of the first activity to the end of the last one, including intra-batch waiting
+    times; the waiting time is calculated as the time waited due to the batch processing, i.e., the time since the first enablement to the
+    first start.
+
+    :param batch_case: activity instances of the batch case.
+    :param log_ids: dict with the attribute IDs.
+
+    :return: a tuple with the processing and waiting times, respectively, of the batch case.
+    """
+    batch_case_enabled_time = get_batch_case_enabled_time(batch_case, log_ids)
+    batch_case_start_time = get_batch_case_start_time(batch_case, log_ids)
+    batch_case_end_time = get_batch_case_end_time(batch_case, log_ids)
+    return (batch_case_end_time - batch_case_start_time), (batch_case_start_time - batch_case_enabled_time)
 
 
 def get_batch_case_processing_waiting_times(batch_case: pd.DataFrame, log_ids: EventLogIDs) -> (timedelta, timedelta):

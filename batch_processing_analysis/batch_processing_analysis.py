@@ -7,7 +7,7 @@ from config import EventLogIDs as StartTimeEventLogIDs
 
 from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
-from batch_utils import get_batch_instance_enabled_time, get_batch_instance_start_time, get_batch_case_processing_waiting_times
+from batch_utils import get_batch_instance_enabled_time, get_batch_instance_start_time, get_naive_batch_case_processing_waiting_times
 
 
 class BatchProcessingAnalysis:
@@ -84,7 +84,7 @@ class BatchProcessingAnalysis:
                 # Other WT: The time a particular case waits for its order to be processed when other cases in a batch are being processed.
                 other_wt = case_first_event[self.log_ids.start_time] - batch_first_start
                 # Overall PT and WT: Time since the enablement of the batch case until its end.
-                batch_pt, batch_wt = get_batch_case_processing_waiting_times(batch_case, self.log_ids)
+                batch_pt, batch_wt = get_naive_batch_case_processing_waiting_times(batch_case, self.log_ids)
                 self.batch_event_log.loc[
                     (self.batch_event_log[self.log_ids.batch_id] == batch_key) & (self.batch_event_log[self.log_ids.case] == case_key),
                     [self.log_ids.batch_total_wt,
