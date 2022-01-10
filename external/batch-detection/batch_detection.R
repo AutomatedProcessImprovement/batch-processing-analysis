@@ -27,9 +27,15 @@ args <- commandArgs(trailingOnly = TRUE)
 ################################
 
 # Parameters
-input_log_path <- args[1]
-output_log_path <- args[2]
-timestamp_format <- args[3]
+input_log_path <- args[1]  # Path to the input log
+output_log_path <- args[2]  # Path to write the log with batch information
+seq_tolerated_gap <- as.numeric(args[3])  # Number of seconds for the allowed gap between sequential cases
+case_id <- args[4]  # name of the column to identify the case
+activity <- args[5]  # name of the column to identify the activity
+enabled_time <- args[6]  # name of the column to identify the enablement timestamp
+start_time <- args[7]  # name of the column to identify the start timestamp
+end_time <- args[8]  # name of the column to identify the end timestamp
+resource <- args[9]  # name of the column to identify the resource
 
 
 # Read CSV
@@ -40,7 +46,7 @@ event_log[["resource"]][is.na(event_log[["resource"]])] <- "NOT_SET"
 
 # Create seq_tolerated_gap_list (gap of 0 seconds is allowed)
 seq_tolerated_gap_list <- seq_tolerated_gap_list_generator(task_log = event_log, 
-                                                           seq_tolerated_gap_value = 0)
+                                                           seq_tolerated_gap_value = seq_tolerated_gap)
 
 subsequence_list <- enumerate_subsequences(event_log, 0)
 # Use the following line for using frequent sequence mining instead
@@ -60,6 +66,6 @@ result_log <- detect_batching(task_log = event_log,
                               between_cases_seq_tolerated_gap = 0,
                               show_progress = F)
 
-names(result_log) <- c("case_id", "Activity", "enabled_time", "start_time", "end_time", "Resource",
+names(result_log) <- c(case_id, activity, enabled_time, start_time, end_time, resource,
                        "batch_number", "batch_type", "batch_subprocess_number", "batch_subprocess_type")
 write.csv(result_log, output_log_path, quote = FALSE, row.names = FALSE)

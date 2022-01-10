@@ -222,7 +222,13 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
          config.PATH_BATCH_DETECTION_SCRIPT,
          preprocessed_log_path,
          batched_log_path,
-         "yyyy-mm-dd hh:mm:ss"],
+         "0",
+         config.log_ids.case,
+         config.log_ids.activity,
+         config.log_ids.enabled_time,
+         config.log_ids.start_time,
+         config.log_ids.end_time,
+         config.log_ids.resource],
         shell=True
     )
     # Read batch event log
