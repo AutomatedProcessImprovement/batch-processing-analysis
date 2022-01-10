@@ -8,7 +8,7 @@ from batch_config import Configuration, EventLogIDs, BatchType
 from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time
 
 
-def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+def _remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
     found = True  # Flag to check for "wrong" cases until all of them are fine
     # ----------------------------------- #
     # --- Process single task batches --- #
@@ -69,7 +69,7 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
                 ] = new_batch_instance_key
 
 
-def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+def _split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
     # ----------------------------------- #
     # --- Process single task batches --- #
     # ----------------------------------- #
@@ -102,7 +102,7 @@ def split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, l
                 ] = new_batch_instance_key
 
 
-def split_batches_with_different_type(event_log_with_batches: pd.DataFrame):
+def _split_batches_with_different_type(event_log_with_batches: pd.DataFrame):
     subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
     for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
         if len(batch_instance['batch_type'].unique()) > 1:
@@ -113,14 +113,14 @@ def split_batches_with_different_type(event_log_with_batches: pd.DataFrame):
             ] = np.NaN
 
 
-def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+def _remove_low_size_batch_instances(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs, min_size: int):
     # ---------------------------------- #
     # --- Process subprocess batches --- #
     # ---------------------------------- #
     batch_numbers = []
     subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
     for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
-        if len(batch_instance[log_ids.case].unique()) == 1:
+        if len(batch_instance[log_ids.case].unique()) < min_size:
             # Only one case in the batch instance -> save to remove batch info
             batch_numbers += [batch_instance_key]
     # If there are single-case batches, remove their batch info
@@ -135,7 +135,7 @@ def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_id
     batch_numbers = []
     single_task_batch_events = event_log_with_batches[pd.isna(event_log_with_batches['batch_subprocess_type'])]
     for (batch_instance_key, batch_instance) in single_task_batch_events.groupby(['batch_number']):
-        if len(batch_instance[log_ids.case].unique()) == 1:
+        if len(batch_instance[log_ids.case].unique()) < min_size:
             # Only one case in the batch instance -> save to remove batch info
             batch_numbers += [batch_instance_key]
     # If there are single-case batches, remove their batch info
@@ -146,7 +146,7 @@ def remove_one_case_batch_instances(event_log_with_batches: pd.DataFrame, log_id
         ] = np.NaN
 
 
-def unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
+def _unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
     batch_id = 1
     event_log_with_batches[log_ids.batch_id] = np.NaN
     # Single-task batch instances
@@ -238,15 +238,15 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
     event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
     # Split subprocess batch instances with different task-level batch type
-    split_batches_with_different_type(event_log_with_batches)
+    _split_batches_with_different_type(event_log_with_batches)
     # Split batch instances with different resources
-    split_batch_with_different_resources(event_log_with_batches, config.log_ids)
+    _split_batch_with_different_resources(event_log_with_batches, config.log_ids)
     # Remove batch cases with enable time before first batch start time (negative ready batch wt)
-    remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
+    _remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
     # Remove all batch instances formed only by one case
-    remove_one_case_batch_instances(event_log_with_batches, config.log_ids)
+    _remove_low_size_batch_instances(event_log_with_batches, config.log_ids, config.min_batch_instance_size)
     # Reformat batches to standard
-    unify_batch_information(event_log_with_batches, config.log_ids)
+    _unify_batch_information(event_log_with_batches, config.log_ids)
     # Remove created files
     os.remove(preprocessed_log_path)
     os.remove(batched_log_path)

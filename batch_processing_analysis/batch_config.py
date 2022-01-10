@@ -53,9 +53,11 @@ class Configuration:
         log_ids                             Identifiers for each key element (e.g. executed activity or resource).
         num_batch_ready_negative_events     Number of non-activating events to generate in the batch-ready interval to extract the batch
                                             activation rules
+        min_batch_instance_size             Minimum size to analyze a batch instance, being the size its number of batch cases.
     """
     log_ids: EventLogIDs = EventLogIDs()
     num_batch_ready_negative_events: int = 3
+    min_batch_instance_size: int = 2
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
