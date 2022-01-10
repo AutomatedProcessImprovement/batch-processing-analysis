@@ -30,8 +30,8 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
                 if batch_instance_start < batch_case_enabled:
                     # The batch instance started before the batch case was enabled -> store key to separate the batch case
                     batch_case_keys += [batch_case_key]
-                    found = True  # A batch case with "wrong" enabled time has been found
-            if found:
+            if len(batch_case_keys) > 0:
+                found = True
                 # Declare as a new batch instance those batch cases with "wrong" enabled time
                 new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
                 event_log_with_batches.loc[
@@ -58,8 +58,8 @@ def remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_id
                 if batch_instance_start < batch_case_enabled:
                     # The batch instance started before the batch case was enabled -> store key to separate the batch case
                     batch_case_keys += [batch_case_key]
-                    found = True  # A batch case with "wrong" enabled time has been found
-            if found:
+            if len(batch_case_keys) > 0:
+                found = True
                 # Declare as a new batch instance those batch cases with "wrong" enabled time
                 new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
                 event_log_with_batches.loc[
