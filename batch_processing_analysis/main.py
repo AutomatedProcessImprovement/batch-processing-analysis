@@ -3,6 +3,7 @@ from datetime import timedelta
 import pandas as pd
 from numpy import mean
 
+from batch_activation_rules import ActivationRulesDiscoverer
 from batch_config import Configuration
 from batch_processing_analysis import BatchProcessingAnalysis
 from batch_processing_report import summarize_batch_waiting_times
@@ -26,17 +27,20 @@ def main():
                 print("\tBatch type: {}".format(batch_type))
                 print("\t\tNum batch instances: {}".format(batch_stats['num_instances']))
                 print("\t\tNum batch cases: {}".format(batch_stats['num_cases']))
-                print("\t\tAverage overall processing time: {} sec".format(avg_duration(batch_stats['processing_time'])))
-                print("\t\tAverage overall waiting time: {} sec".format(avg_duration(batch_stats['waiting_time'])))
+                print("\t\tAverage overall processing time: {} sec".format(mean(batch_stats['processing_time'])))
+                print("\t\tAverage overall waiting time: {} sec".format(mean(batch_stats['waiting_time'])))
                 print("\t\tCTE: {}".format(cte(batch_stats['processing_time'], batch_stats['waiting_time'])))
-                print("\t\tAverage total wt: {} sec".format(avg_duration(batch_stats['total_wt'])))
-                print("\t\tAverage creation wt: {} sec".format(avg_duration(batch_stats['creation_wt'])))
-                print("\t\tAverage ready wt: {} sec".format(avg_duration(batch_stats['ready_wt'])))
-                print("\t\tAverage other wt: {} sec".format(avg_duration(batch_stats['other_wt'])))
-
-
-def avg_duration(durations: list):
-    return mean(durations)
+                print("\t\tAverage total wt: {} sec".format(mean(batch_stats['total_wt'])))
+                print("\t\tAverage creation wt: {} sec".format(mean(batch_stats['creation_wt'])))
+                print("\t\tAverage ready wt: {} sec".format(mean(batch_stats['ready_wt'])))
+                print("\t\tAverage other wt: {} sec".format(mean(batch_stats['other_wt'])))
+    # Discover activation rules
+    rules = ActivationRulesDiscoverer(batch_event_log, config).get_activation_rules()
+    for key in rules:
+        ruleset_str = str(
+            [str(rule) for rule in rules[key].ruleset_.rules]
+        ).replace(" ", "").replace(",", " V\n\t").replace("'", "").replace("^", " ^ ")
+        print("\n\nBatch: {}:\n\t{}".format(key, ruleset_str))
 
 
 def cte(processing_times: list, waiting_times: list):

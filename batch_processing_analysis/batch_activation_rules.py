@@ -1,10 +1,24 @@
 import enum
 
+import numpy as np
 import pandas as pd
+import wittgenstein as lw
+from sklearn.model_selection import train_test_split
 
 from batch_config import Configuration
 from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
     get_batch_instance_enabled_time
+
+
+class BatchOutcome(enum.Enum):
+    NOT_ACTIVATE = 0
+    ACTIVATE = 1
+
+
+class ActivationRulesMode(enum.Enum):
+    PER_ACTIVITY = 0
+    PER_BATCH = 1
+    PER_BATCH_TYPE = 2
 
 
 class ActivationRulesDiscoverer:
@@ -76,7 +90,7 @@ class ActivationRulesDiscoverer:
                     ]
         return pd.DataFrame(data=features)
 
-    def _get_features(self, instant: pd.Timestamp, batch_instance: pd.DataFrame, outcome) -> dict:
+    def _get_features(self, instant: pd.Timestamp, batch_instance: pd.DataFrame, outcome: BatchOutcome) -> dict:
         """
         Get the features to discover activation rules of a specific instant [instant] in a batch instance [batch_instance].
 
@@ -136,13 +150,44 @@ class ActivationRulesDiscoverer:
             'outcome': outcome
         }
 
-    def get_activation_rules(self):
+    def get_activation_rules(self, mode: ActivationRulesMode = ActivationRulesMode.PER_BATCH_TYPE) -> dict:
         """
-        Infer the activation rules for each batch, and return them in dict form.
+        Infer the activation rules for each activity, batch, or batch type, based on [mode].
+
+        :return: dict with the ID for the activity/batch/batch_type as key, and the rules as value.
         """
-        pass
-
-
-class BatchOutcome(enum.Enum):
-    NOT_ACTIVATE = 0
-    ACTIVATE = 1
+        # Parse features table to transform its values
+        parsed_features_table = self.features_table.copy()
+        parsed_features_table['instant'] = parsed_features_table['instant'].astype(np.int64) / 10 ** 9
+        parsed_features_table['t_ready'] = parsed_features_table['t_ready'].apply(lambda t: t.total_seconds())
+        parsed_features_table['t_waiting'] = parsed_features_table['t_waiting'].apply(lambda t: t.total_seconds())
+        parsed_features_table['t_max_flow'] = parsed_features_table['t_max_flow'].apply(lambda t: t.total_seconds())
+        parsed_features_table['outcome'] = np.where(parsed_features_table['outcome'] == BatchOutcome.ACTIVATE, 1, 0)
+        # Prepare datasets based on the established mode
+        if mode == ActivationRulesMode.PER_ACTIVITY:
+            group_keys = ['firing_activity']
+            batch_groups = parsed_features_table.drop([self.log_ids.batch_id, 'activities'], axis=1).groupby(group_keys)
+        elif mode == ActivationRulesMode.PER_BATCH_TYPE:
+            group_keys = ['activities', self.log_ids.batch_type]
+            batch_groups = parsed_features_table.drop([self.log_ids.batch_id, 'firing_activity'], axis=1).groupby(group_keys)
+        elif mode == ActivationRulesMode.PER_BATCH:
+            group_keys = ['activities']
+            batch_groups = parsed_features_table.drop([self.log_ids.batch_id, 'firing_activity'], axis=1).groupby(group_keys)
+        else:
+            raise ValueError("Mode to discover activation rules unrecognised!")
+        # Calculate activation rules per batch group
+        rules = {}
+        for (key, batch_group) in batch_groups:
+            group_size = len(batch_group) / len(key)
+            if group_size > 10:
+                filtered_group = batch_group.drop(group_keys, axis=1)
+                train, test = train_test_split(filtered_group, test_size=.2)
+                if len(train['outcome'].unique()) > 1:
+                    ripper_clf = lw.RIPPER()
+                    ripper_clf.fit(train, class_feat='outcome')
+                    rules[key] = ripper_clf
+                else:
+                    print("Not extracting rules from batch {} due to only one outcome in training!".format(key))
+            else:
+                print("Not extracting rules from batch {} due to low size: {}".format(key, group_size))
+        return rules
