@@ -46,9 +46,14 @@ def main():
     rules = ActivationRulesDiscoverer(batch_event_log, config).get_activation_rules()
     for key in rules:
         ruleset_str = str(
-            [str(rule) for rule in rules[key].ruleset_.rules]
+            [str(rule) for rule in rules[key]['model'].ruleset_.rules]
         ).replace(" ", "").replace(",", " V\n\t").replace("'", "").replace("^", " ^ ")
-        print("\n\nBatch: {}:\n\t{}".format(key, ruleset_str))
+        print("\n\nBatch: {}:\n\tConfidence: {}\n\tSupport: {}\n\t{}".format(
+            key,
+            rules[key]['confidence'],
+            rules[key]['support'],
+            ruleset_str
+        ))
 
 
 def cte(processing_times: list, waiting_times: list):

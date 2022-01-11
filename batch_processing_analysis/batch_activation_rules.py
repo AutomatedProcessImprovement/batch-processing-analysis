@@ -3,7 +3,7 @@ import enum
 import numpy as np
 import pandas as pd
 import wittgenstein as lw
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score
 
 from batch_config import Configuration
 from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
@@ -178,16 +178,29 @@ class ActivationRulesDiscoverer:
         # Calculate activation rules per batch group
         rules = {}
         for (key, batch_group) in batch_groups:
-            group_size = len(batch_group) / len(key)
-            if group_size > 10:
+            if len(batch_group) > 10:
                 filtered_group = batch_group.drop(group_keys, axis=1)
-                train, test = train_test_split(filtered_group, test_size=.2)
-                if len(train['outcome'].unique()) > 1:
+                if len(filtered_group['outcome'].unique()) > 1:
                     ripper_clf = lw.RIPPER()
-                    ripper_clf.fit(train, class_feat='outcome')
-                    rules[key] = ripper_clf
+                    ripper_clf.fit(filtered_group, class_feat='outcome')
+                    rules[key] = {
+                        'model': ripper_clf,
+                        'confidence': ripper_clf.score(
+                            filtered_group.drop(['outcome'], axis=1),
+                            filtered_group['outcome'],
+                            precision_score  # The precision in the training set is the confidence of the discovered rules
+                        ),
+                        'support': measure_support(
+                            ripper_clf.predict(filtered_group.drop(['outcome'], axis=1)),
+                            filtered_group['outcome']
+                        )
+                    }
                 else:
                     print("Not extracting rules from batch {} due to only one outcome in training!".format(key))
             else:
-                print("Not extracting rules from batch {} due to low size: {}".format(key, group_size))
+                print("Not extracting rules from batch {} due to low size: {}".format(key, len(batch_group)))
         return rules
+
+
+def measure_support(predicted, actual) -> float:
+    return sum(predicted) / len(actual)
