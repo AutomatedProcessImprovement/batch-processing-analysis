@@ -4,7 +4,7 @@ import pandas as pd
 from numpy import mean
 
 from batch_activation_rules import ActivationRulesDiscoverer
-from batch_config import Configuration
+from batch_config import Configuration, BatchType
 from batch_processing_analysis import BatchProcessingAnalysis
 from batch_processing_report import summarize_batch_waiting_times
 
@@ -21,12 +21,20 @@ def main():
     batch_report = summarize_batch_waiting_times(batch_event_log, config.log_ids)
     for batch_activities in batch_report:
         print("\n\nBatch formed by activities: {}".format(batch_activities))
-        for batch_type in batch_report[batch_activities]:
+        print("\tNumber of occurrences: {}".format(batch_report[batch_activities]['total_occurrences']))
+        print("\tNum executed in batch: {}%".format(batch_report[batch_activities]['batched_total_occurrences']))
+        print("\tFrequency executed in batch: {:.2f}%".format(round(batch_report[batch_activities]['batched_freq_occurrence'] * 100), 2))
+        for batch_type in [BatchType.parallel,
+                           BatchType.task_sequential,
+                           BatchType.task_concurrent,
+                           BatchType.case_sequential,
+                           BatchType.case_concurrent]:
             batch_stats = batch_report[batch_activities][batch_type]
             if batch_stats['num_instances'] > 0:
-                print("\tBatch type: {}".format(batch_type))
+                print("\t- Batch type: {}".format(batch_type))
                 print("\t\tNum batch instances: {}".format(batch_stats['num_instances']))
                 print("\t\tNum batch cases: {}".format(batch_stats['num_cases']))
+                print("\t\tFrequency: {:.2f}%".format(round(batch_stats['freq_occurrence'] * 100), 2))
                 print("\t\tAverage overall processing time: {} sec".format(mean(batch_stats['processing_time'])))
                 print("\t\tAverage overall waiting time: {} sec".format(mean(batch_stats['waiting_time'])))
                 print("\t\tCTE: {}".format(cte(batch_stats['processing_time'], batch_stats['waiting_time'])))
