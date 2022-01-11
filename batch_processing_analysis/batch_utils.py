@@ -171,7 +171,7 @@ def get_batch_case_processing_waiting_times(batch_case: pd.DataFrame, log_ids: E
     return processing_time, waiting_time
 
 
-def get_workload(event_log, resource, instant, log_ids) -> int:
+def get_workload(event_log: pd.DataFrame, resource: str, instant: Timestamp, log_ids: EventLogIDs) -> int:
     """
     Get the number of cases in which [resource] is working, or assigned, at the instant [instant].
 
@@ -189,3 +189,36 @@ def get_workload(event_log, resource, instant, log_ids) -> int:
             (instant <= event_log[log_ids.end_time])
             ][log_ids.case].unique()
     )
+
+
+def get_batch_activities_number_executions(event_log: pd.DataFrame, batch: pd.DataFrame, log_ids: EventLogIDs) -> int:
+    """
+    Get the number of times the activities of a batch are executed in the log.
+
+    :param event_log: event log to search the number of executions.
+    :param batch: activity instances of the batch to get the activities.
+    :param log_ids: dict with the attribute IDs.
+
+    :return: the number of times the sequence of activities in the batch were executed in the event log.
+    """
+    activities = list(
+        batch[batch[log_ids.case] == batch[log_ids.case].iloc[0]].sort_values([log_ids.start_time, log_ids.end_time])[log_ids.activity]
+    )
+    # Get number of occurrences
+    if len(activities) == 1:
+        # Single activity, just count
+        activity = activities[0]
+        num_executions = len(event_log[event_log[log_ids.activity] == activity])
+    else:
+        # Subprocess, search occurrences of sequence
+        num_executions = 0
+        for (key, case) in event_log.groupby([log_ids.case]):
+            num_executions += sum(
+                [
+                    list(activity_sequence.values) == activities
+                    for activity_sequence
+                    in case.sort_values([log_ids.start_time, log_ids.end_time])[log_ids.activity].rolling(len(activities))
+                ]
+            )
+    # Return num occurrences
+    return num_executions

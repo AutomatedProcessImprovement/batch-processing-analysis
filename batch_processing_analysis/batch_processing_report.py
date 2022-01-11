@@ -1,7 +1,7 @@
 import pandas as pd
 
 from batch_config import BatchType, EventLogIDs
-from batch_utils import get_batch_activities
+from batch_utils import get_batch_activities, get_batch_activities_number_executions
 
 
 def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs) -> dict:
@@ -26,7 +26,11 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
         # Retrieve stats for this batch type
         if batch_activities not in batches_report:
             batches_report[batch_activities] = _new_batch_stat_structure()
-        batch_type_stats = batches_report[batch_activities][batch_type]
+        batch_report = batches_report[batch_activities]
+        batch_type_stats = batch_report[batch_type]
+        # If not already calculated, get the number of times the activities of this batch were executed (batched or not)
+        if batch_report['total_occurrences'] == 0:
+            batch_report['total_occurrences'] = get_batch_activities_number_executions(event_log, batch_instance, log_ids)
         # Update num instances
         batch_type_stats['num_instances'] += 1
         for (case_key, batch_case) in batch_instance.groupby([log_ids.case]):
@@ -40,13 +44,30 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
             batch_type_stats['creation_wt'] += [batch_case_activity[log_ids.batch_creation_wt]]
             batch_type_stats['ready_wt'] += [batch_case_activity[log_ids.batch_ready_wt]]
             batch_type_stats['other_wt'] += [batch_case_activity[log_ids.batch_other_wt]]
+    # Calculate frequency of occurrence per batch type w.r.t. total executions
+    for batch_activities in batches_report:
+        batch_report = batches_report[batch_activities]
+        batched_occurrences = 0
+        for batch_type in [BatchType.parallel,
+                           BatchType.task_sequential,
+                           BatchType.task_concurrent,
+                           BatchType.case_sequential,
+                           BatchType.case_concurrent]:
+            batch_report[batch_type]['freq_occurrence'] = batch_report[batch_type]['num_cases'] / batch_report['total_occurrences']
+            batched_occurrences += batch_report[batch_type]['num_cases']
+        batch_report['batched_total_occurrences'] = batched_occurrences
+        batch_report['batched_freq_occurrence'] = batched_occurrences / batch_report['total_occurrences']
     # Return batch stats
     return batches_report
 
 
 def _new_batch_stat_structure():
     return {
+        'total_occurrences': 0,
+        'batched_total_occurrences': 0,
+        'batched_freq_occurrence': 0.0,
         BatchType.parallel: {
+            'freq_occurrence': 0.0,
             'num_instances': 0,
             'num_cases': 0,
             'processing_time': [],
@@ -57,6 +78,7 @@ def _new_batch_stat_structure():
             'other_wt': []
         },
         BatchType.task_sequential: {
+            'freq_occurrence': 0.0,
             'num_instances': 0,
             'num_cases': 0,
             'processing_time': [],
@@ -67,6 +89,7 @@ def _new_batch_stat_structure():
             'other_wt': []
         },
         BatchType.task_concurrent: {
+            'freq_occurrence': 0.0,
             'num_instances': 0,
             'num_cases': 0,
             'processing_time': [],
@@ -77,6 +100,7 @@ def _new_batch_stat_structure():
             'other_wt': []
         },
         BatchType.case_sequential: {
+            'freq_occurrence': 0.0,
             'num_instances': 0,
             'num_cases': 0,
             'processing_time': [],
@@ -87,6 +111,7 @@ def _new_batch_stat_structure():
             'other_wt': []
         },
         BatchType.case_concurrent: {
+            'freq_occurrence': 0.0,
             'num_instances': 0,
             'num_cases': 0,
             'processing_time': [],
