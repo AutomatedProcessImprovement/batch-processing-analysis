@@ -54,10 +54,13 @@ class Configuration:
         num_batch_ready_negative_events     Number of non-activating events to generate in the batch-ready interval to extract the batch
                                             activation rules
         min_batch_instance_size             Minimum size to analyze a batch instance, being the size its number of batch cases.
+        batch_discovery_subsequence_type    Method to extract the subsequences in the batch discovery: "all" for considering all
+                                            subsequences, "freq" to use only frequent subsequences.
     """
     log_ids: EventLogIDs = EventLogIDs()
     num_batch_ready_negative_events: int = 3
     min_batch_instance_size: int = 2
+    batch_discovery_subsequence_type: str = "all"
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")

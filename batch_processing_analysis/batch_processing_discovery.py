@@ -223,6 +223,7 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
          preprocessed_log_path,
          batched_log_path,
          "0",
+         config.batch_discovery_subsequence_type,
          config.log_ids.case,
          config.log_ids.activity,
          config.log_ids.enabled_time,
