@@ -1,4 +1,5 @@
 import enum
+import random
 
 import numpy as np
 import pandas as pd
@@ -66,10 +67,11 @@ class ActivationRulesDiscoverer:
                 end=batch_instance_start,
                 periods=self.config.num_batch_ready_negative_events + 2
             )[1:-1].tolist()
-            # 2 - One event per enablement time of each case
-            non_activating_instants += list(batch_instance.groupby([self.log_ids.case]).apply(
+            # 2 - Instants per enablement time of each case
+            enable_times = list(batch_instance.groupby([self.log_ids.case]).apply(
                 lambda batch_case: get_batch_case_enabled_time(batch_case, self.log_ids)
             ))
+            non_activating_instants += random.sample(enable_times, min(len(enable_times), self.config.num_batch_enabled_negative_events))
             # 3 - Obtain the features per instant
             for instant in non_activating_instants:
                 if instant < batch_instance_start:
@@ -145,7 +147,7 @@ class ActivationRulesDiscoverer:
             'day_of_week': day_of_week,
             'day_of_month': day_of_month,
             'hour_of_day': hour_of_day,
-            'minute_of_day': minute_of_day,
+            'minute': minute_of_day,
             'workload': workload,
             'outcome': outcome
         }
