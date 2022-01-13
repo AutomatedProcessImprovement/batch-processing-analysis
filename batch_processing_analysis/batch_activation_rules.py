@@ -4,7 +4,6 @@ import random
 import numpy as np
 import pandas as pd
 import wittgenstein as lw
-from sklearn.metrics import precision_score
 
 from batch_config import Configuration
 from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
@@ -183,26 +182,61 @@ class ActivationRulesDiscoverer:
             if len(batch_group) > 10:
                 filtered_group = batch_group.drop(group_keys, axis=1)
                 if len(filtered_group['outcome'].unique()) > 1:
-                    ripper_clf = lw.RIPPER()
-                    ripper_clf.fit(filtered_group, class_feat='outcome')
-                    rules[key] = {
-                        'model': ripper_clf,
-                        'confidence': ripper_clf.score(
-                            filtered_group.drop(['outcome'], axis=1),
-                            filtered_group['outcome'],
-                            precision_score  # The precision in the training set is the confidence of the discovered rules
-                        ),
-                        'support': measure_support(
-                            ripper_clf.predict(filtered_group.drop(['outcome'], axis=1)),
-                            filtered_group['outcome']
-                        )
-                    }
+                    rules[key] = self._get_rules(filtered_group)
                 else:
                     print("Not extracting rules from batch {} due to only one outcome in training!".format(key))
             else:
                 print("Not extracting rules from batch {} due to low size: {}".format(key, len(batch_group)))
         return rules
 
+    def _get_rules(self, data: pd.DataFrame) -> dict:
+        # Create empty model and data copy
+        ripper_model = None
+        filtered_data = data.copy()
+        # Extract rules one by one
+        continue_search = True
+        while continue_search:
+            # Train new model to extract 1 rule
+            new_model = lw.RIPPER(max_rules=2)
+            new_model.fit(filtered_data, class_feat='outcome')
+            # If any rule has been discovered
+            if len(new_model.ruleset_.rules) > 0:
+                # Measure support
+                predictions = new_model.predict(filtered_data.drop(['outcome'], axis=1))
+                true_positives = [
+                    p and a
+                    for (p, a) in zip(predictions, filtered_data['outcome'])
+                ]
+                support = sum(true_positives) / len(data)
+                if support >= self.config.min_rule_support:
+                    # If the support is enough, add it to the model and remove its positive cases
+                    if ripper_model:
+                        ripper_model.add_rule(new_model.ruleset_.rules[0])
+                    else:
+                        ripper_model = new_model
+                    # Retain only non
+                    filtered_data = filtered_data[[not prediction for prediction in predictions]]
+                else:
+                    # If support is not enough, end search
+                    continue_search = False
+            else:
+                # If no rules has been discovered, end search
+                continue_search = False
+            if ripper_model and len(ripper_model.ruleset_.rules) >= self.config.max_rules:
+                # If enough rules has been discovered, end search
+                continue_search = False
 
-def measure_support(predicted, actual) -> float:
-    return sum(predicted) / len(actual)
+        if ripper_model:
+            predictions = ripper_model.predict(data.drop(['outcome'], axis=1))
+            true_positives = [
+                p and a
+                for (p, a) in zip(predictions, data['outcome'])
+            ]
+            return {
+                'num_obs': len(data),
+                'model': ripper_model,
+                'confidence': sum(true_positives) / sum(predictions),
+                'support': sum(true_positives) / len(data)
+            }
+        else:
+            return {}

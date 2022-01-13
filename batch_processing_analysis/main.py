@@ -37,7 +37,7 @@ def main():
                 print("\t\tFrequency: {:.2f}%".format(round(batch_stats['freq_occurrence'] * 100, 2)))
                 print("\t\tAverage overall processing time: {} sec".format(mean(batch_stats['processing_time'])))
                 print("\t\tAverage overall waiting time: {} sec".format(mean(batch_stats['waiting_time'])))
-                print("\t\tCTE: {}".format(cte(batch_stats['processing_time'], batch_stats['waiting_time'])))
+                print("\t\tCTE: {:.2f}".format(round(cte(batch_stats['processing_time'], batch_stats['waiting_time']), 2)))
                 print("\t\tAverage total wt: {} sec".format(mean(batch_stats['total_wt'])))
                 print("\t\tAverage creation wt: {} sec".format(mean(batch_stats['creation_wt'])))
                 print("\t\tAverage ready wt: {} sec".format(mean(batch_stats['ready_wt'])))
@@ -45,15 +45,19 @@ def main():
     # Discover activation rules
     rules = ActivationRulesDiscoverer(batch_event_log, config).get_activation_rules()
     for key in rules:
-        ruleset_str = str(
-            [str(rule) for rule in rules[key]['model'].ruleset_.rules]
-        ).replace(" ", "").replace(",", " V\n\t").replace("'", "").replace("^", " ^ ")
-        print("\n\nBatch: {}:\n\tConfidence: {}\n\tSupport: {}\n\t{}".format(
-            key,
-            rules[key]['confidence'],
-            rules[key]['support'],
-            ruleset_str
-        ))
+        if len(rules[key]) > 0:
+            ruleset_str = str(
+                [str(rule) for rule in rules[key]['model'].ruleset_.rules]
+            ).replace(" ", "").replace(",", " V\n\t").replace("'", "").replace("^", " ^ ")
+            print("\n\nBatch: {}:\n\t# Observations: {}\n\tConfidence: {:.2f}\n\tSupport: {:.2f}\n\t{}".format(
+                key,
+                rules[key]['num_obs'],
+                round(rules[key]['confidence'], 2),
+                round(rules[key]['support'], 2),
+                ruleset_str
+            ))
+        else:
+            print("\n\nBatch: {}: No rules could match the specified criterion (support >= {}).".format(key, config.min_rule_support))
 
 
 def cte(processing_times: list, waiting_times: list):
