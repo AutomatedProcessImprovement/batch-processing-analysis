@@ -61,9 +61,13 @@ class ActivationRulesDiscoverer:
                 periods=self.config.num_batch_ready_negative_events + 2
             )[1:-1].tolist()
             # 2 - Instants per enablement time of each case
-            enable_times = list(batch_instance.groupby([self.log_ids.case]).apply(
-                lambda batch_case: get_batch_case_enabled_time(batch_case, self.log_ids)
-            ))
+            enable_times = [
+                instant
+                for instant in batch_instance.groupby([self.log_ids.case]).apply(
+                    lambda batch_case: get_batch_case_enabled_time(batch_case, self.log_ids)
+                )
+                if instant < batch_instance_start
+            ]
             non_activating_instants += random.sample(enable_times, min(len(enable_times), self.config.num_batch_enabled_negative_events))
             # 3 - Obtain the features per instant
             for instant in non_activating_instants:
@@ -173,7 +177,7 @@ class ActivationRulesDiscoverer:
         # Calculate activation rules per batch group
         rules = {}
         for (key, batch_group) in batch_groups:
-            if len(batch_group) > 10:
+            if len(batch_group) > 30:
                 filtered_group = batch_group.drop(group_keys, axis=1)
                 if len(filtered_group['outcome'].unique()) > 1:
                     rules[key] = self._get_rules(filtered_group)
