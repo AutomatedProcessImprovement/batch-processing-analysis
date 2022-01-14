@@ -1,3 +1,4 @@
+import enum
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -5,6 +6,12 @@ from pathlib import Path
 
 def get_project_dir() -> Path:
     return Path(os.path.dirname(__file__)).parent
+
+
+class ActivationRulesMode(enum.Enum):
+    PER_ACTIVITY = 0
+    PER_BATCH = 1
+    PER_BATCH_TYPE = 2
 
 
 @dataclass
@@ -55,6 +62,8 @@ class Configuration:
                                             activation rules.
         num_batch_ready_negative_events     Max number of non-activating events to generate in the batch cases enablement instants
                                             to extract the batch activation rules.
+        activation_rules_type               Type of grouping to find the activation rules. For example, 'PER_BATCH' groups all batches of
+                                            the same activities, independently of the batch type, and discover the rules for them.
         max_rules                           Maximum number of activation rules to extract from a batch.
         min_rule_support                    Minimum individual support for the discovered activation rules.
         min_batch_instance_size             Minimum size to analyze a batch instance, being the size its number of batch cases.
@@ -64,6 +73,7 @@ class Configuration:
     log_ids: EventLogIDs = EventLogIDs()
     num_batch_ready_negative_events: int = 1
     num_batch_enabled_negative_events: int = 1
+    activation_rules_type: ActivationRulesMode = ActivationRulesMode.PER_BATCH
     max_rules: int = 3
     min_rule_support: float = 0.1
     min_batch_instance_size: int = 2

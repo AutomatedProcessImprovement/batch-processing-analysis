@@ -43,7 +43,7 @@ def main():
                 print("\t\tAverage ready wt: {} sec".format(mean(batch_stats['ready_wt'])))
                 print("\t\tAverage other wt: {} sec".format(mean(batch_stats['other_wt'])))
     # Discover activation rules
-    rules = ActivationRulesDiscoverer(batch_event_log, config).get_activation_rules()
+    rules = ActivationRulesDiscoverer(batch_event_log, config).get_activation_rules(config.activation_rules_type)
     for key in rules:
         if len(rules[key]) > 0:
             ruleset_str = str(

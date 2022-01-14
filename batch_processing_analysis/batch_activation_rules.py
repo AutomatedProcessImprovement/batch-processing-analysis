@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import wittgenstein as lw
 
-from batch_config import Configuration
+from batch_config import Configuration, ActivationRulesMode
 from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
     get_batch_instance_enabled_time
 
@@ -13,12 +13,6 @@ from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_ti
 class BatchOutcome(enum.Enum):
     NOT_ACTIVATE = 0
     ACTIVATE = 1
-
-
-class ActivationRulesMode(enum.Enum):
-    PER_ACTIVITY = 0
-    PER_BATCH = 1
-    PER_BATCH_TYPE = 2
 
 
 class ActivationRulesDiscoverer:
