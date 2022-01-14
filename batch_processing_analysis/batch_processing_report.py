@@ -33,6 +33,7 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
             batch_report['total_occurrences'] = get_batch_activities_number_executions(event_log, batch_instance, log_ids)
         # Update num instances
         batch_type_stats['num_instances'] += 1
+        batch_type_stats['batch_sizes'] += [len(batch_instance[log_ids.case].unique())]
         for (case_key, batch_case) in batch_instance.groupby([log_ids.case]):
             # First activity of this batch case
             batch_case_activity = batch_case.iloc[0]
@@ -69,6 +70,7 @@ def _new_batch_stat_structure():
         BatchType.parallel: {
             'freq_occurrence': 0.0,
             'num_instances': 0,
+            'batch_sizes': [],
             'num_cases': 0,
             'processing_time': [],
             'waiting_time': [],
@@ -80,6 +82,7 @@ def _new_batch_stat_structure():
         BatchType.task_sequential: {
             'freq_occurrence': 0.0,
             'num_instances': 0,
+            'batch_sizes': [],
             'num_cases': 0,
             'processing_time': [],
             'waiting_time': [],
@@ -91,6 +94,7 @@ def _new_batch_stat_structure():
         BatchType.task_concurrent: {
             'freq_occurrence': 0.0,
             'num_instances': 0,
+            'batch_sizes': [],
             'num_cases': 0,
             'processing_time': [],
             'waiting_time': [],
@@ -102,6 +106,7 @@ def _new_batch_stat_structure():
         BatchType.case_sequential: {
             'freq_occurrence': 0.0,
             'num_instances': 0,
+            'batch_sizes': [],
             'num_cases': 0,
             'processing_time': [],
             'waiting_time': [],
@@ -113,6 +118,7 @@ def _new_batch_stat_structure():
         BatchType.case_concurrent: {
             'freq_occurrence': 0.0,
             'num_instances': 0,
+            'batch_sizes': [],
             'num_cases': 0,
             'processing_time': [],
             'waiting_time': [],

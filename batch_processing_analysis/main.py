@@ -33,6 +33,7 @@ def main():
             if batch_stats['num_instances'] > 0:
                 print("\t- Batch type: {}".format(batch_type))
                 print("\t\tNum batch instances: {}".format(batch_stats['num_instances']))
+                print("\t\tBatch size distribution: {}".format(Counter(batch_stats['batch_sizes'])))
                 print("\t\tNum batch cases: {}".format(batch_stats['num_cases']))
                 print("\t\tFrequency: {:.2f}%".format(round(batch_stats['freq_occurrence'] * 100, 2)))
                 print("\t\tAverage overall processing time: {} sec".format(mean(batch_stats['processing_time'])))
