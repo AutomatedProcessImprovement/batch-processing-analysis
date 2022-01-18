@@ -73,4 +73,4 @@ result_log <- detect_batching(task_log = event_log,
 
 names(result_log) <- c(case_id, activity, enabled_time, start_time, end_time, resource,
                        "batch_number", "batch_type", "batch_subprocess_number", "batch_subprocess_type")
-write.csv(result_log, output_log_path, quote = FALSE, row.names = FALSE)
+write.csv(result_log, output_log_path, quote = FALSE, row.names = FALSE, fileEncoding = "UTF-8")
