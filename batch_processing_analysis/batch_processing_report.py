@@ -1,4 +1,8 @@
+from collections import Counter
+from datetime import timedelta
+
 import pandas as pd
+from numpy import mean
 
 from batch_config import BatchType, EventLogIDs
 from batch_utils import get_batch_activities, get_batch_activities_number_executions
@@ -128,3 +132,70 @@ def _new_batch_stat_structure():
             'other_wt': []
         },
     }
+
+
+def print_batch_waiting_times_report(batch_report: dict):
+    for batch_activities in batch_report:
+        # Print general batch information
+        print("\n\nBatch formed by activities: {}".format(batch_activities))
+        print("\tNum occurrences: {}".format(batch_report[batch_activities]['total_occurrences']))
+        print("\tNum occurrences in batch: {}".format(batch_report[batch_activities]['batched_total_occurrences']))
+        print("\tFrequency occurrences in batch: {:.2f}%".format(round(batch_report[batch_activities]['batched_freq_occurrence'] * 100, 2)))
+        # Aggregate type WTs
+        batch_sizes = []
+        batch_processing_times = []
+        batch_waiting_times = []
+        batch_total_wt = []
+        batch_creation_wt = []
+        batch_ready_wt = []
+        batch_other_wt = []
+        for batch_type in [BatchType.parallel,
+                           BatchType.task_sequential,
+                           BatchType.task_concurrent,
+                           BatchType.case_sequential,
+                           BatchType.case_concurrent]:
+            batch_stats = batch_report[batch_activities][batch_type]
+            batch_sizes += batch_stats['batch_sizes']
+            batch_processing_times += batch_stats['processing_time']
+            batch_waiting_times += batch_stats['waiting_time']
+            batch_total_wt += batch_stats['total_wt']
+            batch_creation_wt += batch_stats['creation_wt']
+            batch_ready_wt += batch_stats['ready_wt']
+            batch_other_wt += batch_stats['other_wt']
+        # Print info about aggregated WTs
+        print("\tBatch size distribution: {}".format(Counter(batch_sizes)))
+        print("\tAverage overall processing time: {} sec".format(mean(batch_processing_times)))
+        print("\tAverage overall waiting time: {} sec".format(mean(batch_waiting_times)))
+        print("\tCTE: {:.2f}".format(round(cte(batch_processing_times, batch_waiting_times), 2)))
+        print("\tAverage total wt: {} sec".format(mean(batch_total_wt)))
+        print("\tAverage creation wt: {} sec".format(mean(batch_creation_wt)))
+        print("\tAverage ready wt: {} sec".format(mean(batch_ready_wt)))
+        print("\tAverage other wt: {} sec".format(mean(batch_other_wt)))
+        # Print info about each batch type WT
+        for batch_type in [BatchType.parallel,
+                           BatchType.task_sequential,
+                           BatchType.task_concurrent,
+                           BatchType.case_sequential,
+                           BatchType.case_concurrent]:
+            batch_stats = batch_report[batch_activities][batch_type]
+            if batch_stats['num_instances'] > 0:
+                print("\t- Batch type: {}".format(batch_type))
+                print("\t\tNum batch instances: {}".format(batch_stats['num_instances']))
+                print("\t\tBatch size distribution: {}".format(Counter(batch_stats['batch_sizes'])))
+                print("\t\tNum batch cases: {}".format(batch_stats['num_cases']))
+                print("\t\tFrequency: {:.2f}%".format(round(batch_stats['freq_occurrence'] * 100, 2)))
+                print("\t\tAverage overall processing time: {} sec".format(mean(batch_stats['processing_time'])))
+                print("\t\tAverage overall waiting time: {} sec".format(mean(batch_stats['waiting_time'])))
+                print("\t\tCTE: {:.2f}".format(round(cte(batch_stats['processing_time'], batch_stats['waiting_time']), 2)))
+                print("\t\tAverage total wt: {} sec".format(mean(batch_stats['total_wt'])))
+                print("\t\tAverage creation wt: {} sec".format(mean(batch_stats['creation_wt'])))
+                print("\t\tAverage ready wt: {} sec".format(mean(batch_stats['ready_wt'])))
+                print("\t\tAverage other wt: {} sec".format(mean(batch_stats['other_wt'])))
+
+
+def cte(processing_times: list, waiting_times: list):
+    if sum(processing_times, timedelta(0)) > timedelta(0):
+        value = sum(processing_times, timedelta(0)) / (sum(processing_times, timedelta(0)) + sum(waiting_times, timedelta(0)))
+    else:
+        value = 0
+    return value
