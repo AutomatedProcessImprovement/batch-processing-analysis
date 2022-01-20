@@ -25,8 +25,12 @@ def inject_batches(
         log_ids: EventLogIDs,
         wt_ready: bool = True,
         wt_other: bool = True,
-        batch_type: _BatchType = _BatchType.CONCURRENT
+        batch_types=None
 ) -> pd.DataFrame:
+    # Set default argument if not provided
+    if batch_types is None:
+        batch_types = [_BatchType.CONCURRENT]
+    # Copy event log to inject batches
     batched_event_log = event_log.copy()
     # Get all executions of the activity to batch
     activity_instances = batched_event_log[
@@ -39,6 +43,7 @@ def inject_batches(
     for batch_index, batch_instance in enumerate(batch_instances):
         latest_start = None
         latest_end = None
+        batch_type = batch_types[batch_index % len(batch_types)]
         # For each activity instance in the batch instance
         for activity_index, activity_instance in batch_instance.iterrows():
             # Calculate the time to displace the execution of the activity in order to force the batch
@@ -162,32 +167,37 @@ def _main_batch_injection(preprocessed_log_path: str):
     batched_event_log = inject_batches(
         event_log=event_log,
         activity=" Assess loan risk",
-        batch_size=12,
+        batch_size=14,
         resource_prefix="Fake Loan Officer",
         log_ids=log_ids,
         wt_ready=True,
-        wt_other=False,
-        batch_type=_BatchType.PARALLEL
+        wt_other=True,
+        batch_types=[_BatchType.PARALLEL, _BatchType.SEQUENTIAL, _BatchType.CONCURRENT]
     )
-    # batched_event_log = inject_batches(
-    #    batched_event_log,
-    #    " Cancel application",
-    #    12,
-    #    ["Fake Clerk 1", "Fake Clerk 2", "Fake Clerk 3", "Fake Clerk 4", "Fake Clerk 5"],
-    #    log_ids
-    # )
-    # batched_event_log = inject_batches(
-    #    batched_event_log,
-    #    " Approve application",
-    #    11,
-    #    ["Fake Tom 1", "Fake Tom 2", "Fake Tom 3", "Fake Tom 4", "Fake Tom 5"],
-    #    log_ids
-    # )
-    # Re-calc enabled times
+    batched_event_log = inject_batches(
+        event_log=batched_event_log,
+        activity=" Cancel application",
+        batch_size=10,
+        resource_prefix="Fake Clerk",
+        log_ids=log_ids,
+        wt_ready=True,
+        wt_other=False,
+        batch_types=[_BatchType.PARALLEL, _BatchType.CONCURRENT]
+    )
+    batched_event_log = inject_batches(
+        event_log=batched_event_log,
+        activity=" Approve application",
+        batch_size=12,
+        resource_prefix="Fake Tom",
+        log_ids=log_ids,
+        wt_ready=False,
+        wt_other=True,
+        batch_types=[_BatchType.SEQUENTIAL, _BatchType.CONCURRENT]
+    )
     _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log.to_csv(preprocessed_log_path.replace(".csv.gz", "_batched.csv"), encoding='utf-8', index=False)
 
 
 if __name__ == '__main__':
-    preprocessed_log_path = "C:/Users/David Chapela/PycharmProjects/start-time-estimator/event_logs/Loan_Application.csv.gz"
-    _main_batch_injection(preprocessed_log_path)
+    log_path = "C:/Users/David Chapela/PycharmProjects/start-time-estimator/event_logs/Loan_Application.csv.gz"
+    _main_batch_injection(log_path)
