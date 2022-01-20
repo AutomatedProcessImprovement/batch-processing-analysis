@@ -57,11 +57,18 @@ def inject_batches(
                 wt_other,
                 batch_type
             )
-            # Displace all its successors
+            # Displace all activity instances starting and ending after the current one
             batched_event_log.loc[
                 (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
-                (batched_event_log[log_ids.start_time] > activity_instance[log_ids.start_time]),
+                (batched_event_log[log_ids.start_time] >= activity_instance[log_ids.start_time]),
                 [log_ids.start_time, log_ids.end_time]
+            ] += difference
+            # Displace the end of all activity instances starting before the current one, but ending after it
+            batched_event_log.loc[
+                (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
+                (batched_event_log[log_ids.start_time] < activity_instance[log_ids.start_time]) &
+                (batched_event_log[log_ids.end_time] > activity_instance[log_ids.start_time]),
+                log_ids.end_time
             ] += difference
             # Displace the activity, assign the resource, and assign the batch ID for debugging purposes
             batched_event_log.loc[
@@ -174,6 +181,7 @@ def _main_batch_injection(preprocessed_log_path: str):
         wt_other=True,
         batch_types=[_BatchType.PARALLEL, _BatchType.SEQUENTIAL, _BatchType.CONCURRENT]
     )
+    _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log = inject_batches(
         event_log=batched_event_log,
         activity=" Cancel application",
@@ -184,6 +192,7 @@ def _main_batch_injection(preprocessed_log_path: str):
         wt_other=False,
         batch_types=[_BatchType.PARALLEL, _BatchType.CONCURRENT]
     )
+    _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log = inject_batches(
         event_log=batched_event_log,
         activity=" Approve application",
