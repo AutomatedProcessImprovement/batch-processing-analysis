@@ -58,26 +58,26 @@ class Configuration:
 
     Attributes:
         log_ids                             Identifiers for each key element (e.g. executed activity or resource).
-        num_batch_ready_negative_events     Number of non-activating events to generate in the batch-ready interval to extract the batch
-                                            activation rules.
-        num_batch_ready_negative_events     Max number of non-activating events to generate in the batch cases enablement instants
-                                            to extract the batch activation rules.
+        min_batch_instance_size             Minimum size to analyze a batch instance, being the size its number of batch cases.
+        batch_discovery_subsequence_type    Method to extract the subsequences in the batch discovery: "all" for considering all
+                                            subsequences, "freq" to use only frequent subsequences.
         activation_rules_type               Type of grouping to find the activation rules. For example, 'PER_BATCH' groups all batches of
                                             the same activities, independently of the batch type, and discover the rules for them.
         max_rules                           Maximum number of activation rules to extract from a batch.
         min_rule_support                    Minimum individual support for the discovered activation rules.
-        min_batch_instance_size             Minimum size to analyze a batch instance, being the size its number of batch cases.
-        batch_discovery_subsequence_type    Method to extract the subsequences in the batch discovery: "all" for considering all
-                                            subsequences, "freq" to use only frequent subsequences.
+        num_batch_ready_negative_events     Number of non-activating events to generate in the batch-ready interval to extract the batch
+                                            activation rules.
+        num_batch_enabled_negative_events   Max number of non-activating events to generate in the batch cases enablement instants
+                                            to extract the batch activation rules.
     """
     log_ids: EventLogIDs = EventLogIDs()
-    num_batch_ready_negative_events: int = 1
-    num_batch_enabled_negative_events: int = 1
+    min_batch_instance_size: int = 2
+    batch_discovery_subsequence_type: str = "all"
     activation_rules_type: ActivationRulesMode = ActivationRulesMode.PER_BATCH
     max_rules: int = 3
     min_rule_support: float = 0.1
-    min_batch_instance_size: int = 2
-    batch_discovery_subsequence_type: str = "all"
+    num_batch_ready_negative_events: int = 1
+    num_batch_enabled_negative_events: int = 1
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
