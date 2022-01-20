@@ -1,3 +1,5 @@
+import datetime
+import enum
 import math
 
 import numpy as np
@@ -9,7 +11,22 @@ from config import EventLogIDs as StartTimeEventLogIDs
 from batch_config import EventLogIDs
 
 
-def inject_batches(event_log: pd.DataFrame, activity: str, batch_size: int, resource_prefix: str, log_ids: EventLogIDs) -> pd.DataFrame:
+class _BatchType(enum.Enum):
+    PARALLEL = 0
+    SEQUENTIAL = 1
+    CONCURRENT = 3
+
+
+def inject_batches(
+        event_log: pd.DataFrame,
+        activity: str,
+        batch_size: int,
+        resource_prefix: str,
+        log_ids: EventLogIDs,
+        wt_ready: bool = True,
+        wt_other: bool = True,
+        batch_type: _BatchType = _BatchType.CONCURRENT
+) -> pd.DataFrame:
     batched_event_log = event_log.copy()
     # Get all executions of the activity to batch
     activity_instances = batched_event_log[
@@ -20,43 +37,103 @@ def inject_batches(event_log: pd.DataFrame, activity: str, batch_size: int, reso
     batch_instances = np.array_split(activity_instances, num_batches)
     # For each batch instance
     for batch_index, batch_instance in enumerate(batch_instances):
-        new_start = None
+        latest_start = None
         latest_end = None
-        latest_duration = None
         # For each activity instance in the batch instance
         for activity_index, activity_instance in batch_instance.iterrows():
             # Calculate the time to displace the execution of the activity in order to force the batch
-            current_duration = (activity_instance[log_ids.end_time] - activity_instance[log_ids.start_time])
-            if not new_start:
-                # First iteration of the batch instance
-                new_start = batch_instance[log_ids.start_time].max()
-            else:
-                # Following iterations
-                new_start = latest_end - (min(latest_duration, current_duration) / 4)
-            difference = new_start - activity_instance[log_ids.start_time]
-            latest_end = activity_instance[log_ids.end_time] + difference
-            latest_duration = current_duration
+            new_start, new_end, difference = _get_new_start_end_difference(
+                activity_instance,
+                batch_instance,
+                latest_start,
+                latest_end,
+                log_ids,
+                wt_ready,
+                wt_other,
+                batch_type
+            )
             # Displace all its successors
             batched_event_log.loc[
                 (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
                 (batched_event_log[log_ids.start_time] > activity_instance[log_ids.start_time]),
                 [log_ids.start_time, log_ids.end_time]
             ] += difference
-            # Displace the activity
+            # Displace the activity, assign the resource, and assign the batch ID for debugging purposes
             batched_event_log.loc[
                 activity_index,
-                [log_ids.start_time, log_ids.end_time]
-            ] += difference
-            # Assign the resource to the activity, and the batch ID for debugging purposes
-            batched_event_log.loc[
-                activity_index,
-                [log_ids.resource, log_ids.batch_id]
-            ] = ["{}-{}".format(resource_prefix, batch_index), "{}-{}".format(activity, batch_index)]
+                [log_ids.start_time, log_ids.end_time, log_ids.resource, log_ids.batch_id]
+            ] = [new_start, new_end, "{}-{}".format(resource_prefix, batch_index), "{}-{}".format(activity, batch_index)]
+            # Update new time instants
+            latest_start = new_start
+            latest_end = new_end
     # Return
     return batched_event_log
 
 
+def _get_new_start_end_difference(
+        activity_instance: pd.DataFrame,
+        batch_instance: pd.DataFrame,
+        latest_start: pd.Timestamp,
+        latest_end: pd.DataFrame,
+        log_ids: EventLogIDs,
+        wt_ready: bool = True,
+        wt_other: bool = True,
+        batch_type: _BatchType = _BatchType.CONCURRENT
+) -> (pd.Timestamp, pd.Timestamp, datetime.timedelta):
+    # Get duration of current activity instance
+    current_duration = (activity_instance[log_ids.end_time] - activity_instance[log_ids.start_time])
+    # Calculate the new start time
+    if not latest_start:
+        # First iteration of the batch instance
+        max_enabled = batch_instance[log_ids.enabled_time].max()
+        max_start = batch_instance[log_ids.start_time].max()
+        if wt_ready and max_start > max_enabled:
+            # WT_ready wanted and there is already some WT in the last started one
+            new_start = max_start
+        elif wt_ready:
+            # WT_ready wanted but there is non in the last started one, so force it to a quarter of the current activity duration
+            new_start = max_enabled + (current_duration / 4)
+        else:
+            new_start = max_enabled
+    else:
+        # Following iterations
+        latest_duration = (latest_end - latest_start)
+        if batch_type == _BatchType.SEQUENTIAL:
+            new_start = latest_end
+        elif batch_type == _BatchType.CONCURRENT and wt_other:
+            new_start = latest_end - (min(latest_duration, current_duration) / 4)
+        else:  # PARALLEL or NO WT_other
+            new_start = latest_start
+    # Calculate the difference between the new start and the actual start
+    difference = new_start - activity_instance[log_ids.start_time]
+    # Calculate the new end time
+    if batch_type == _BatchType.SEQUENTIAL or batch_type == _BatchType.CONCURRENT:
+        new_end = activity_instance[log_ids.end_time] + difference
+    else:  # PARALLEL
+        if not latest_end:
+            # First iteration of the batch instance
+            agg_duration = (batch_instance[log_ids.end_time] - batch_instance[log_ids.start_time]).sum()
+            new_end = new_start + agg_duration
+        else:
+            # Following iterations
+            new_end = latest_end
+        # Update difference if the end changed
+        difference += new_end - (activity_instance[log_ids.end_time] + difference)
+    return new_start, new_end, difference
+
+
 def _calculate_enabled_timed(event_log: pd.DataFrame, log_ids: EventLogIDs):
+    start_time_config = StartTimeConfiguration(
+        log_ids=StartTimeEventLogIDs(
+            case=log_ids.case,
+            activity=log_ids.activity,
+            enabled_time=log_ids.enabled_time,
+            start_time=log_ids.start_time,
+            end_time=log_ids.end_time,
+            resource=log_ids.resource,
+        ),
+        consider_parallelism=True
+    )
     concurrency_oracle = HeuristicsConcurrencyOracle(event_log, start_time_config)
     for (batch_key, trace) in event_log.groupby([log_ids.case]):
         trace_start_time = trace[log_ids.start_time].min()
@@ -72,29 +149,26 @@ def _calculate_enabled_timed(event_log: pd.DataFrame, log_ids: EventLogIDs):
         event_log.loc[indexes, log_ids.enabled_time] = enabled_times
 
 
-if __name__ == '__main__':
-    preprocessed_log_path = "C:/Users/David Chapela/PycharmProjects/start-time-estimator/event_logs/Loan_Application.csv.gz"
+def _main_batch_injection(preprocessed_log_path: str):
     log_ids = EventLogIDs()
     # Read and preprocess event log
     event_log = pd.read_csv(preprocessed_log_path)
     event_log[log_ids.start_time] = pd.to_datetime(event_log[log_ids.start_time], utc=True)
     event_log[log_ids.end_time] = pd.to_datetime(event_log[log_ids.end_time], utc=True)
     # Calc enabled times
-    start_time_config = StartTimeConfiguration(
-        log_ids=StartTimeEventLogIDs(
-            case=log_ids.case,
-            activity=log_ids.activity,
-            enabled_time=log_ids.enabled_time,
-            start_time=log_ids.start_time,
-            end_time=log_ids.end_time,
-            resource=log_ids.resource,
-        ),
-        consider_parallelism=True
-    )
     _calculate_enabled_timed(event_log, log_ids)
     # Inject batching
     event_log[log_ids.batch_id] = np.NaN
-    batched_event_log = inject_batches(event_log, " Assess loan risk", 15, "Fake Loan Officer", log_ids)
+    batched_event_log = inject_batches(
+        event_log=event_log,
+        activity=" Assess loan risk",
+        batch_size=12,
+        resource_prefix="Fake Loan Officer",
+        log_ids=log_ids,
+        wt_ready=True,
+        wt_other=False,
+        batch_type=_BatchType.PARALLEL
+    )
     # batched_event_log = inject_batches(
     #    batched_event_log,
     #    " Cancel application",
@@ -109,5 +183,11 @@ if __name__ == '__main__':
     #    ["Fake Tom 1", "Fake Tom 2", "Fake Tom 3", "Fake Tom 4", "Fake Tom 5"],
     #    log_ids
     # )
+    # Re-calc enabled times
     _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log.to_csv(preprocessed_log_path.replace(".csv.gz", "_batched.csv"), encoding='utf-8', index=False)
+
+
+if __name__ == '__main__':
+    preprocessed_log_path = "C:/Users/David Chapela/PycharmProjects/start-time-estimator/event_logs/Loan_Application.csv.gz"
+    _main_batch_injection(preprocessed_log_path)
