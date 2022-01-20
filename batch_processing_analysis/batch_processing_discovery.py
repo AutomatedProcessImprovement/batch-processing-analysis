@@ -212,7 +212,7 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     # Export event log
     preprocessed_event_log.to_csv(
         preprocessed_log_path,
-        date_format="%Y-%m-%d %H:%M:%S",
+        date_format="%Y-%m-%d %H:%M:%S.%f",
         encoding='utf-8',
         index=False,
         compression='gzip')

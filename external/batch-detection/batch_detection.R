@@ -41,7 +41,8 @@ resource <- args[10]  # name of the column to identify the resource
 
 # Read CSV
 event_log <- read_csv(input_log_path)
-names(event_log) <- c("case_id", "activity", "arrival", "start", "complete", "resource")
+names(event_log) <- c("case_id", "activity", "enabled", "start", "complete", "resource")
+event_log[, "arrival"] <- NA
 event_log[["resource"]][is.na(event_log[["resource"]])] <- "NOT_SET"
 
 
@@ -62,15 +63,16 @@ if (subsequence_method == "freq") {
 # Detect batching behavior
 result_log <- detect_batching(task_log = event_log,
                               act_seq_tolerated_gap_list = seq_tolerated_gap_list,
-                              timestamp_format = timestamp_format,
+                              timestamp_format = "yyyy-mm-dd hh:mm:ss",
                               numeric_timestamps = FALSE,
                               log_and_model_based = TRUE,
                               subsequence_list = subsequence_list,
                               subsequence_type = subsequence_type,
-                              within_case_seq_tolerated_gap = 0,
-                              between_cases_seq_tolerated_gap = 0,
+                              within_case_seq_tolerated_gap = seq_tolerated_gap,
+                              between_cases_seq_tolerated_gap = seq_tolerated_gap,
                               show_progress = F)
 
+result_log[, "arrival"] <- NULL
 names(result_log) <- c(case_id, activity, enabled_time, start_time, end_time, resource,
                        "batch_number", "batch_type", "batch_subprocess_number", "batch_subprocess_type")
 write.csv(result_log, output_log_path, quote = FALSE, row.names = FALSE, fileEncoding = "UTF-8")
