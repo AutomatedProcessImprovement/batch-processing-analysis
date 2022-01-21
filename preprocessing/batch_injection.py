@@ -7,6 +7,7 @@ import pandas as pd
 from concurrency_oracle import HeuristicsConcurrencyOracle
 from config import Configuration as StartTimeConfiguration
 from config import EventLogIDs as StartTimeEventLogIDs
+from pandas import Timedelta
 
 from batch_config import EventLogIDs
 
@@ -23,6 +24,8 @@ def inject_batches(
         batch_size: int,
         resource_prefix: str,
         log_ids: EventLogIDs,
+        day_of_week: int = None,
+        hour_of_day: int = None,
         wt_ready: bool = True,
         wt_other: bool = True,
         batch_types=None
@@ -48,14 +51,16 @@ def inject_batches(
         for activity_index, activity_instance in batch_instance.iterrows():
             # Calculate the time to displace the execution of the activity in order to force the batch
             new_start, new_end, difference = _get_new_start_end_difference(
-                activity_instance,
-                batch_instance,
-                latest_start,
-                latest_end,
-                log_ids,
-                wt_ready,
-                wt_other,
-                batch_type
+                activity_instance=activity_instance,
+                batch_instance=batch_instance,
+                latest_start=latest_start,
+                latest_end=latest_end,
+                log_ids=log_ids,
+                day_of_week=day_of_week,
+                hour_of_day=hour_of_day,
+                wt_ready=wt_ready,
+                wt_other=wt_other,
+                batch_type=batch_type
             )
             # Displace all activity instances starting and ending after the current one
             batched_event_log.loc[
@@ -88,6 +93,8 @@ def _get_new_start_end_difference(
         latest_start: pd.Timestamp,
         latest_end: pd.DataFrame,
         log_ids: EventLogIDs,
+        day_of_week: int = None,
+        hour_of_day: int = None,
         wt_ready: bool = True,
         wt_other: bool = True,
         batch_type: _BatchType = _BatchType.CONCURRENT
@@ -99,13 +106,29 @@ def _get_new_start_end_difference(
         # First iteration of the batch instance
         max_enabled = batch_instance[log_ids.enabled_time].max()
         max_start = batch_instance[log_ids.start_time].max()
-        if wt_ready and max_start > max_enabled:
-            # WT_ready wanted and there is already some WT in the last started one
-            new_start = max_start
-        elif wt_ready:
-            # WT_ready wanted but there is non in the last started one, so force it to a quarter of the current activity duration
-            new_start = max_enabled + (current_duration / 4)
+        if wt_ready:
+            # WT_ready wanted
+            if (day_of_week is not None) or (hour_of_day is not None):
+                # Set as new start the latest start time
+                new_start = max_start
+                if hour_of_day is not None:
+                    # Specific hour wanted
+                    if new_start.hour != hour_of_day or new_start <= max_enabled:
+                        # Displace until the next specific hour is reached
+                        new_start += Timedelta(hours=(hour_of_day - new_start.hour) % 24)
+                if day_of_week is not None:
+                    # Specific day wanted
+                    if new_start.day_of_week != day_of_week or new_start <= max_enabled:
+                        # Displace until the next specific day_of_week
+                        new_start += Timedelta(days=(day_of_week - new_start.day_of_week) % 7)
+            elif max_start > max_enabled:
+                # Not a specific day/hour and there is already some WT in the last started one
+                new_start = max_start
+            else:
+                # Not a specific day/hour and there is no WT_ready, so force it to a quarter of the current activity duration
+                new_start = max_enabled + (current_duration / 4)
         else:
+            # Not WT_ready wanted, so start as soon as the batch instance is enabled
             new_start = max_enabled
     else:
         # Following iterations
@@ -177,6 +200,7 @@ def _main_batch_injection(preprocessed_log_path: str):
         batch_size=14,
         resource_prefix="Fake Loan Officer",
         log_ids=log_ids,
+        day_of_week=0,
         wt_ready=True,
         wt_other=True,
         batch_types=[_BatchType.PARALLEL, _BatchType.SEQUENTIAL, _BatchType.CONCURRENT]
@@ -188,6 +212,8 @@ def _main_batch_injection(preprocessed_log_path: str):
         batch_size=10,
         resource_prefix="Fake Clerk",
         log_ids=log_ids,
+        day_of_week=4,
+        hour_of_day=10,
         wt_ready=True,
         wt_other=False,
         batch_types=[_BatchType.PARALLEL, _BatchType.CONCURRENT]
