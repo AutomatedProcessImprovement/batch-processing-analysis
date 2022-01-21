@@ -40,7 +40,7 @@ def inject_batches(
         batched_event_log[log_ids.activity] == activity
         ].sort_values(by=[log_ids.start_time, log_ids.end_time, log_ids.case])
     # Group by batches based on the desired size
-    num_batches = math.ceil(len(activity_instances) / batch_size)
+    num_batches = math.floor(len(activity_instances) / batch_size)
     batch_instances = np.array_split(activity_instances, num_batches)
     # For each batch instance
     for batch_index, batch_instance in enumerate(batch_instances):
