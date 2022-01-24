@@ -1,0 +1,180 @@
+Batch formed by activities: ('Assess loan risk',)
+	Num occurrences: 7000
+	Num occurrences in batch: 5264
+	Frequency occurrences in batch: 75.20%
+	Batch size distribution: Counter({14: 376})
+	Average overall processing time: 0 days 10:49:44.951747720 sec
+	Average overall waiting time: 4 days 14:52:04.443389057 sec
+	CTE: 0.09
+	Average total wt: 4 days 14:52:04.443389057 sec
+	Average creation wt: 0 days 12:45:44.215425531 sec
+	Average ready wt: 3 days 17:49:36.337765957 sec
+	Average other wt: 0 days 08:16:43.890197568 sec
+	- Batch type: Parallel
+		Num batch instances: 128
+		Batch size distribution: Counter({14: 128})
+		Num batch cases: 1792
+		Frequency: 25.60%
+		Average overall processing time: 1 days 04:09:18.195312500 sec
+		Average overall waiting time: 4 days 06:10:35.657366071 sec
+		CTE: 0.22
+		Average total wt: 4 days 06:10:35.657366071 sec
+		Average creation wt: 0 days 13:29:59.704241071 sec
+		Average ready wt: 3 days 16:40:35.953125 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 128
+		Batch size distribution: Counter({14: 128})
+		Num batch cases: 1792
+		Frequency: 25.60%
+		Average overall processing time: 0 days 01:51:41.840401785 sec
+		Average overall waiting time: 5 days 01:31:26.912946428 sec
+		CTE: 0.02
+		Average total wt: 5 days 01:31:26.912946428 sec
+		Average creation wt: 0 days 10:54:01.935825892 sec
+		Average ready wt: 4 days 00:54:00.492187500 sec
+		Average other wt: 0 days 13:43:24.484933035 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 120
+		Batch size distribution: Counter({14: 120})
+		Num batch cases: 1680
+		Frequency: 24.00%
+		Average overall processing time: 0 days 01:54:48.810714285 sec
+		Average overall waiting time: 4 days 12:46:19.180952380 sec
+		CTE: 0.02
+		Average total wt: 4 days 12:46:19.180952380 sec
+		Average creation wt: 0 days 13:57:40.792261904 sec
+		Average ready wt: 3 days 11:30:30.983333333 sec
+		Average other wt: 0 days 11:18:07.405357142 sec
+
+
+
+Batch formed by activities: ('Cancel application',)
+	Num occurrences: 1094
+	Num occurrences in batch: 780
+	Frequency occurrences in batch: 71.30%
+	Batch size distribution: Counter({10: 78})
+	Average overall processing time: 0 days 12:14:46.333333333 sec
+	Average overall waiting time: 5 days 07:39:09.142307692 sec
+	CTE: 0.09
+	Average total wt: 5 days 07:39:09.142307692 sec
+	Average creation wt: 2 days 10:06:16.116666666 sec
+	Average ready wt: 2 days 21:32:53.025641025 sec
+	Average other wt: 0 days 00:00:00 sec
+	- Batch type: Parallel
+		Num batch instances: 46
+		Batch size distribution: Counter({10: 46})
+		Num batch cases: 460
+		Frequency: 42.05%
+		Average overall processing time: 0 days 19:27:25.673913043 sec
+		Average overall waiting time: 5 days 13:09:43.606521739 sec
+		CTE: 0.13
+		Average total wt: 5 days 13:09:43.606521739 sec
+		Average creation wt: 2 days 13:47:32.128260869 sec
+		Average ready wt: 2 days 23:22:11.478260869 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 32
+		Batch size distribution: Counter({10: 32})
+		Num batch cases: 320
+		Frequency: 29.25%
+		Average overall processing time: 0 days 01:52:49.781250 sec
+		Average overall waiting time: 4 days 23:43:57.100000 sec
+		CTE: 0.02
+		Average total wt: 4 days 23:43:57.100000 sec
+		Average creation wt: 2 days 04:48:11.850000 sec
+		Average ready wt: 2 days 18:55:45.250000 sec
+		Average other wt: 0 days 00:00:00 sec
+
+
+
+Batch formed by activities: ('Approve application',)
+	Num occurrences: 2410
+	Num occurrences in batch: 1548
+	Frequency occurrences in batch: 64.23%
+	Batch size distribution: Counter({12: 129})
+	Average overall processing time: 0 days 02:18:00.536175710 sec
+	Average overall waiting time: 1 days 22:54:03.135658914 sec
+	CTE: 0.05
+	Average total wt: 1 days 22:54:03.135658914 sec
+	Average creation wt: 1 days 10:31:21.703488372 sec
+	Average ready wt: 0 days 00:00:00 sec
+	Average other wt: 0 days 12:22:41.432170542 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 68
+		Batch size distribution: Counter({12: 68})
+		Num batch cases: 816
+		Frequency: 33.86%
+		Average overall processing time: 0 days 02:15:18.148284313 sec
+		Average overall waiting time: 1 days 20:52:40.165441176 sec
+		CTE: 0.05
+		Average total wt: 1 days 20:52:40.165441176 sec
+		Average creation wt: 1 days 07:48:10.314950980 sec
+		Average ready wt: 0 days 00:00:00 sec
+		Average other wt: 0 days 13:04:29.850490196 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 61
+		Batch size distribution: Counter({12: 61})
+		Num batch cases: 732
+		Frequency: 30.37%
+		Average overall processing time: 0 days 02:21:01.558743169 sec
+		Average overall waiting time: 2 days 01:09:21.856557377 sec
+		CTE: 0.05
+		Average total wt: 2 days 01:09:21.856557377 sec
+		Average creation wt: 1 days 13:33:16.693989071 sec
+		Average ready wt: 0 days 00:00:00 sec
+		Average other wt: 0 days 11:36:05.162568306 sec
+
+
+
+Batch formed by activities: ('Approve Loan Offer',)
+	Num occurrences: 6104
+	Num occurrences in batch: 20
+	Frequency occurrences in batch: 0.33%
+	Batch size distribution: Counter({10: 2})
+	Average overall processing time: 0 days 00:18:57.100000 sec
+	Average overall waiting time: 0 days 17:19:35 sec
+	CTE: 0.02
+	Average total wt: 0 days 17:19:35 sec
+	Average creation wt: 0 days 14:42:54.500000 sec
+	Average ready wt: 0 days 02:13:44.500000 sec
+	Average other wt: 0 days 00:22:56 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 2
+		Batch size distribution: Counter({10: 2})
+		Num batch cases: 20
+		Frequency: 0.33%
+		Average overall processing time: 0 days 00:18:57.100000 sec
+		Average overall waiting time: 0 days 17:19:35 sec
+		CTE: 0.02
+		Average total wt: 0 days 17:19:35 sec
+		Average creation wt: 0 days 14:42:54.500000 sec
+		Average ready wt: 0 days 02:13:44.500000 sec
+		Average other wt: 0 days 00:22:56 sec
+
+
+
+Batch formed by activities: ('Appraise property',)
+	Num occurrences: 4357
+	Num occurrences in batch: 23
+	Frequency occurrences in batch: 0.53%
+	Batch size distribution: Counter({11: 1, 12: 1})
+	Average overall processing time: 0 days 01:59:07.956521739 sec
+	Average overall waiting time: 1 days 12:41:20.130434782 sec
+	CTE: 0.05
+	Average total wt: 1 days 12:41:20.130434782 sec
+	Average creation wt: 1 days 00:47:12.478260869 sec
+	Average ready wt: 0 days 00:47:25 sec
+	Average other wt: 0 days 11:06:42.652173913 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 2
+		Batch size distribution: Counter({11: 1, 12: 1})
+		Num batch cases: 23
+		Frequency: 0.53%
+		Average overall processing time: 0 days 01:59:07.956521739 sec
+		Average overall waiting time: 1 days 12:41:20.130434782 sec
+		CTE: 0.05
+		Average total wt: 1 days 12:41:20.130434782 sec
+		Average creation wt: 1 days 00:47:12.478260869 sec
+		Average ready wt: 0 days 00:47:25 sec
+		Average other wt: 0 days 11:06:42.652173913 sec

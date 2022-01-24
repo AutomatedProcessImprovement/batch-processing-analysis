@@ -1,0 +1,27 @@
+
+
+Not extracting rules from batch ('Appraise property',) due to low size: 6
+
+
+Not extracting rules from batch ('Approve Loan Offer',) due to low size: 6
+
+
+Batch: ('Approve application',):
+	# Observations: 258
+	Confidence: 1.00
+	Support: 0.50
+	[[num_queue=>11.5]]
+
+
+Batch: ('Assess loan risk',):
+	# Observations: 1092
+	Confidence: 0.94
+	Support: 0.34
+	[[day_of_week=0 ^ num_queue=>13.0]]
+
+
+Batch: ('Cancel application',):
+	# Observations: 233
+	Confidence: 0.97
+	Support: 0.33
+	[[day_of_week=4 ^ num_queue=10 ^ hour_of_day=3.0-10.0]]
