@@ -7,7 +7,8 @@ from batch_processing_report import summarize_batch_waiting_times, print_batch_w
 
 
 def main():
-    preprocessed_log_path = "C:/Users/David Chapela/PycharmProjects/start-time-estimator/event_logs/Production.csv.gz"
+    preprocessed_log_path = "../external/logs/Production.csv.gz"
+    # config = Configuration(min_batch_instance_size=10)  # Restrict batch size to min 10 cases (see batch_config.py)
     config = Configuration()
     # Read and preprocess event log
     event_log = pd.read_csv(preprocessed_log_path)
@@ -33,6 +34,8 @@ def main():
             ))
         else:
             print("\n\nBatch: {}: No rules could match the specified criterion (support >= {}).".format(key, config.min_rule_support))
+    # Write log with WT info to file
+    batch_event_log.to_csv("../outputs/Production_WTs.csv.gz", encoding='utf-8', index=False, compression='gzip')
 
 
 if __name__ == '__main__':
