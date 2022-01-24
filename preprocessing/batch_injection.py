@@ -1,3 +1,9 @@
+"""
+Implementation of the artificial injection of batches to a simulated event log of a Loan Application process. This
+code has been used to artificially inject batches in order to perform an experimentation with synthetic data and
+prove that the technique is able to discover batches and calculated the related waiting times and activation rules.
+"""
+
 import datetime
 import enum
 import math
@@ -6,9 +12,9 @@ import random
 import numpy as np
 import pandas as pd
 from concurrency_oracle import HeuristicsConcurrencyOracle
-from config import Configuration as StartTimeConfiguration
-from config import EventLogIDs as StartTimeEventLogIDs
 from pandas import Timedelta
+from start_time_config import Configuration as StartTimeConfiguration
+from start_time_config import EventLogIDs as StartTimeEventLogIDs
 
 from batch_config import EventLogIDs
 
