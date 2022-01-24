@@ -1,6 +1,7 @@
 import datetime
 import enum
 import math
+import random
 
 import numpy as np
 import pandas as pd
@@ -43,47 +44,52 @@ def inject_batches(
     num_batches = math.floor(len(activity_instances) / batch_size)
     batch_instances = np.array_split(activity_instances, num_batches)
     # For each batch instance
+    count_batches = [0] * len(batch_types)
     for batch_index, batch_instance in enumerate(batch_instances):
         latest_start = None
         latest_end = None
-        batch_type = batch_types[batch_index % len(batch_types)]
-        # For each activity instance in the batch instance
-        for activity_index, activity_instance in batch_instance.iterrows():
-            # Calculate the time to displace the execution of the activity in order to force the batch
-            new_start, new_end, difference = _get_new_start_end_difference(
-                activity_instance=activity_instance,
-                batch_instance=batch_instance,
-                latest_start=latest_start,
-                latest_end=latest_end,
-                log_ids=log_ids,
-                day_of_week=day_of_week,
-                hour_of_day=hour_of_day,
-                wt_ready=wt_ready,
-                wt_other=wt_other,
-                batch_type=batch_type
-            )
-            # Displace all activity instances starting and ending after the current one
-            batched_event_log.loc[
-                (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
-                (batched_event_log[log_ids.start_time] >= activity_instance[log_ids.start_time]),
-                [log_ids.start_time, log_ids.end_time]
-            ] += difference
-            # Displace the end of all activity instances starting before the current one, but ending after it
-            batched_event_log.loc[
-                (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
-                (batched_event_log[log_ids.start_time] < activity_instance[log_ids.start_time]) &
-                (batched_event_log[log_ids.end_time] > activity_instance[log_ids.start_time]),
-                log_ids.end_time
-            ] += difference
-            # Displace the activity, assign the resource, and assign the batch ID for debugging purposes
-            batched_event_log.loc[
-                activity_index,
-                [log_ids.start_time, log_ids.end_time, log_ids.resource, log_ids.batch_id]
-            ] = [new_start, new_end, "{}-{}".format(resource_prefix, batch_index), "{}-{}".format(activity, batch_index)]
-            # Update new time instants
-            latest_start = new_start
-            latest_end = new_end
+        batch_type = random.choice(batch_types)
+        count_batches[batch_types.index(batch_type)] += 1
+        # If batch type is None or the groups has a different length, skip this group
+        if (batch_type is not None) and (len(batch_instance) == batch_size):
+            # For each activity instance in the batch instance
+            for activity_index, activity_instance in batch_instance.iterrows():
+                # Calculate the time to displace the execution of the activity in order to force the batch
+                new_start, new_end, difference = _get_new_start_end_difference(
+                    activity_instance=activity_instance,
+                    batch_instance=batch_instance,
+                    latest_start=latest_start,
+                    latest_end=latest_end,
+                    log_ids=log_ids,
+                    day_of_week=day_of_week,
+                    hour_of_day=hour_of_day,
+                    wt_ready=wt_ready,
+                    wt_other=wt_other,
+                    batch_type=batch_type
+                )
+                # Displace all activity instances starting and ending after the current one
+                batched_event_log.loc[
+                    (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
+                    (batched_event_log[log_ids.start_time] >= activity_instance[log_ids.start_time]),
+                    [log_ids.start_time, log_ids.end_time]
+                ] += difference
+                # Displace the end of all activity instances starting before the current one, but ending after it
+                batched_event_log.loc[
+                    (batched_event_log[log_ids.case] == activity_instance[log_ids.case]) &
+                    (batched_event_log[log_ids.start_time] < activity_instance[log_ids.start_time]) &
+                    (batched_event_log[log_ids.end_time] > activity_instance[log_ids.start_time]),
+                    log_ids.end_time
+                ] += difference
+                # Displace the activity, assign the resource, and assign the batch ID for debugging purposes
+                batched_event_log.loc[
+                    activity_index,
+                    [log_ids.start_time, log_ids.end_time, log_ids.resource, log_ids.batch_id]
+                ] = [new_start, new_end, "{}-{}".format(resource_prefix, batch_index), "{}-{}".format(activity, batch_index)]
+                # Update new time instants
+                latest_start = new_start
+                latest_end = new_end
     # Return
+    print(count_batches)
     return batched_event_log
 
 
@@ -203,7 +209,7 @@ def _main_batch_injection(preprocessed_log_path: str):
         day_of_week=0,
         wt_ready=True,
         wt_other=True,
-        batch_types=[_BatchType.PARALLEL, _BatchType.SEQUENTIAL, _BatchType.CONCURRENT]
+        batch_types=[_BatchType.PARALLEL, _BatchType.SEQUENTIAL, _BatchType.CONCURRENT, None]
     )
     _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log = inject_batches(
@@ -216,7 +222,7 @@ def _main_batch_injection(preprocessed_log_path: str):
         hour_of_day=10,
         wt_ready=True,
         wt_other=False,
-        batch_types=[_BatchType.PARALLEL, _BatchType.CONCURRENT]
+        batch_types=[_BatchType.PARALLEL, _BatchType.CONCURRENT, None]
     )
     _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log = inject_batches(
@@ -227,7 +233,7 @@ def _main_batch_injection(preprocessed_log_path: str):
         log_ids=log_ids,
         wt_ready=False,
         wt_other=True,
-        batch_types=[_BatchType.SEQUENTIAL, _BatchType.CONCURRENT]
+        batch_types=[_BatchType.SEQUENTIAL, _BatchType.CONCURRENT, None]
     )
     _calculate_enabled_timed(batched_event_log, log_ids)
     batched_event_log.to_csv(preprocessed_log_path.replace(".csv.gz", "_batched.csv"), encoding='utf-8', index=False)
