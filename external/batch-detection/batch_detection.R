@@ -1,25 +1,28 @@
-##############################################
-### BAMA (Batch Activity Mining Algorithm) ###
-### https://github.com/nielsmartin/bama    ###
-### Credits: Niels Martin                  ###
-##############################################
+################
+# DEPENDENCIES #
+################
 
-# Install development version
 # install.packages('lubridate')
 # install.packages('stringr')
 # install.packages('tidyr')
 # install.packages('arules')
 # install.packages('arulesSequences')
 # install.packages('bupaR')
+
+### BAMA (Batch Activity Mining Algorithm)
+### https://github.com/nielsmartin/bama
 # install.packages('nielsmartin-bama-bbcc130', repos = NULL, type = "source")
 
-# Packages
+
+############
+# PACKAGES #
+############
+
 library(bamalog)
 library(readr)
 library(dplyr)
 library(lubridate)
 
-args <- commandArgs(trailingOnly = TRUE)
 
 
 ################################
@@ -27,6 +30,8 @@ args <- commandArgs(trailingOnly = TRUE)
 ################################
 
 # Parameters
+args <- commandArgs(trailingOnly = TRUE)
+
 input_log_path <- args[1]  # Path to the input log
 output_log_path <- args[2]  # Path to write the log with batch information
 seq_tolerated_gap <- as.numeric(args[3])  # Number of seconds for the allowed gap between sequential cases
