@@ -1,0 +1,490 @@
+Batch formed by activities: ('Final Inspection Q.C.',)
+	Num occurrences: 550
+	Num occurrences in batch: 196
+	Frequency occurrences in batch: 35.64%
+	Batch size distribution: Counter({2: 77, 3: 10, 4: 3})
+	Average overall processing time: 0 days 02:04:52.959183673 sec
+	Average overall waiting time: 8 days 03:42:45.918367347 sec
+	CTE: 0.01
+	Average total wt: 8 days 03:42:45.918367347 sec
+	Average creation wt: 5 days 04:10:03.061224489 sec
+	Average ready wt: 2 days 22:43:27.244897959 sec
+	Average other wt: 0 days 00:49:15.612244897 sec
+	- Batch type: Parallel
+		Num batch instances: 1
+		Batch size distribution: Counter({2: 1})
+		Num batch cases: 2
+		Frequency: 0.36%
+		Average overall processing time: 0 days 03:50:00 sec
+		Average overall waiting time: 3 days 16:40:00 sec
+		CTE: 0.04
+		Average total wt: 3 days 16:40:00 sec
+		Average creation wt: 3 days 16:20:00 sec
+		Average ready wt: 0 days 00:20:00 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 42
+		Batch size distribution: Counter({2: 38, 3: 3, 4: 1})
+		Num batch cases: 89
+		Frequency: 16.18%
+		Average overall processing time: 0 days 01:37:53.258426966 sec
+		Average overall waiting time: 6 days 15:18:37.078651685 sec
+		CTE: 0.01
+		Average total wt: 6 days 15:18:37.078651685 sec
+		Average creation wt: 4 days 01:23:46.516853932 sec
+		Average ready wt: 2 days 13:03:50.561797752 sec
+		Average other wt: 0 days 00:51:00 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 47
+		Batch size distribution: Counter({2: 38, 3: 7, 4: 2})
+		Num batch cases: 105
+		Frequency: 19.09%
+		Average overall processing time: 0 days 02:25:45.714285714 sec
+		Average overall waiting time: 9 days 12:36:25.714285714 sec
+		CTE: 0.01
+		Average total wt: 9 days 12:36:25.714285714 sec
+		Average creation wt: 6 days 03:32:30.857142857 sec
+		Average ready wt: 3 days 08:15:11.428571428 sec
+		Average other wt: 0 days 00:48:43.428571428 sec
+
+
+Batch formed by activities: ('Flat Grinding',)
+	Num occurrences: 114
+	Num occurrences in batch: 8
+	Frequency occurrences in batch: 7.02%
+	Batch size distribution: Counter({2: 4})
+	Average overall processing time: 0 days 01:41:00 sec
+	Average overall waiting time: 6 days 05:03:15 sec
+	CTE: 0.01
+	Average total wt: 6 days 05:03:15 sec
+	Average creation wt: 2 days 19:41:07.500000 sec
+	Average ready wt: 3 days 09:10:15 sec
+	Average other wt: 0 days 00:11:52.500000 sec
+	- Batch type: Parallel
+		Num batch instances: 2
+		Batch size distribution: Counter({2: 2})
+		Num batch cases: 4
+		Frequency: 3.51%
+		Average overall processing time: 0 days 01:15:00 sec
+		Average overall waiting time: 8 days 18:11:30 sec
+		CTE: 0.01
+		Average total wt: 8 days 18:11:30 sec
+		Average creation wt: 5 days 08:31:30 sec
+		Average ready wt: 3 days 09:40:00 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 2
+		Batch size distribution: Counter({2: 2})
+		Num batch cases: 4
+		Frequency: 3.51%
+		Average overall processing time: 0 days 02:07:00 sec
+		Average overall waiting time: 3 days 15:55:00 sec
+		CTE: 0.02
+		Average total wt: 3 days 15:55:00 sec
+		Average creation wt: 0 days 06:50:45 sec
+		Average ready wt: 3 days 08:40:30 sec
+		Average other wt: 0 days 00:23:45 sec
+
+
+Batch formed by activities: ('Grinding Rework',)
+	Num occurrences: 97
+	Num occurrences in batch: 23
+	Frequency occurrences in batch: 23.71%
+	Batch size distribution: Counter({2: 10, 3: 1})
+	Average overall processing time: 0 days 01:58:33.913043478 sec
+	Average overall waiting time: 12 days 23:23:46.956521739 sec
+	CTE: 0.01
+	Average total wt: 12 days 23:23:46.956521739 sec
+	Average creation wt: 8 days 19:22:20.869565217 sec
+	Average ready wt: 4 days 02:36:49.565217391 sec
+	Average other wt: 0 days 01:24:36.521739130 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 9
+		Batch size distribution: Counter({2: 8, 3: 1})
+		Num batch cases: 19
+		Frequency: 19.59%
+		Average overall processing time: 0 days 01:38:12.631578947 sec
+		Average overall waiting time: 12 days 16:12:56.842105263 sec
+		CTE: 0.01
+		Average total wt: 12 days 16:12:56.842105263 sec
+		Average creation wt: 8 days 05:27:15.789473684 sec
+		Average ready wt: 4 days 09:42:09.473684210 sec
+		Average other wt: 0 days 01:03:31.578947368 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 2
+		Batch size distribution: Counter({2: 2})
+		Num batch cases: 4
+		Frequency: 4.12%
+		Average overall processing time: 0 days 03:35:15 sec
+		Average overall waiting time: 14 days 09:30:15 sec
+		CTE: 0.01
+		Average total wt: 14 days 09:30:15 sec
+		Average creation wt: 11 days 13:29:00 sec
+		Average ready wt: 2 days 16:56:30 sec
+		Average other wt: 0 days 03:04:45 sec
+
+
+Batch formed by activities: ('Lapping',)
+	Num occurrences: 112
+	Num occurrences in batch: 102
+	Frequency occurrences in batch: 91.07%
+	Batch size distribution: Counter({2: 40, 3: 6, 4: 1})
+	Average overall processing time: 0 days 01:49:36.470588235 sec
+	Average overall waiting time: 6 days 20:44:14.705882353 sec
+	CTE: 0.01
+	Average total wt: 6 days 20:44:14.705882353 sec
+	Average creation wt: 4 days 04:39:18.823529411 sec
+	Average ready wt: 2 days 15:31:13.529411764 sec
+	Average other wt: 0 days 00:33:42.352941176 sec
+	- Batch type: Parallel
+		Num batch instances: 17
+		Batch size distribution: Counter({2: 13, 3: 3, 4: 1})
+		Num batch cases: 39
+		Frequency: 34.82%
+		Average overall processing time: 0 days 01:15:00 sec
+		Average overall waiting time: 6 days 13:10:00 sec
+		CTE: 0.01
+		Average total wt: 6 days 13:10:00 sec
+		Average creation wt: 5 days 04:10:20 sec
+		Average ready wt: 1 days 08:59:40 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 8
+		Batch size distribution: Counter({2: 8})
+		Num batch cases: 16
+		Frequency: 14.29%
+		Average overall processing time: 0 days 02:24:07.500000 sec
+		Average overall waiting time: 3 days 15:25:33.750000 sec
+		CTE: 0.03
+		Average total wt: 3 days 15:25:33.750000 sec
+		Average creation wt: 2 days 07:25:56.250000 sec
+		Average ready wt: 1 days 06:54:30 sec
+		Average other wt: 0 days 01:05:07.500000 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 22
+		Batch size distribution: Counter({2: 19, 3: 3})
+		Num batch cases: 47
+		Frequency: 41.96%
+		Average overall processing time: 0 days 02:06:34.468085106 sec
+		Average overall waiting time: 8 days 05:20:17.872340425 sec
+		CTE: 0.01
+		Average total wt: 8 days 05:20:17.872340425 sec
+		Average creation wt: 4 days 00:32:10.212765957 sec
+		Average ready wt: 4 days 03:57:08.936170212 sec
+		Average other wt: 0 days 00:50:58.723404255 sec
+
+
+Batch formed by activities: ('Laser Marking',)
+	Num occurrences: 252
+	Num occurrences in batch: 46
+	Frequency occurrences in batch: 18.25%
+	Batch size distribution: Counter({2: 20, 3: 2})
+	Average overall processing time: 0 days 00:55:28.695652173 sec
+	Average overall waiting time: 8 days 08:56:18.260869565 sec
+	CTE: 0.00
+	Average total wt: 8 days 08:56:18.260869565 sec
+	Average creation wt: 4 days 05:28:43.043478260 sec
+	Average ready wt: 4 days 03:13:28.695652173 sec
+	Average other wt: 0 days 00:14:06.521739130 sec
+	- Batch type: Parallel
+		Num batch instances: 3
+		Batch size distribution: Counter({2: 3})
+		Num batch cases: 6
+		Frequency: 2.38%
+		Average overall processing time: 0 days 00:56:00 sec
+		Average overall waiting time: 17 days 03:53:20 sec
+		CTE: 0.00
+		Average total wt: 17 days 03:53:20 sec
+		Average creation wt: 8 days 14:56:00 sec
+		Average ready wt: 8 days 12:57:20 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 8
+		Batch size distribution: Counter({2: 6, 3: 2})
+		Num batch cases: 18
+		Frequency: 7.14%
+		Average overall processing time: 0 days 00:41:43.333333333 sec
+		Average overall waiting time: 6 days 11:58:53.333333333 sec
+		CTE: 0.00
+		Average total wt: 6 days 11:58:53.333333333 sec
+		Average creation wt: 2 days 23:08:23.333333333 sec
+		Average ready wt: 3 days 12:25:26.666666666 sec
+		Average other wt: 0 days 00:25:03.333333333 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 11
+		Batch size distribution: Counter({2: 11})
+		Num batch cases: 22
+		Frequency: 8.73%
+		Average overall processing time: 0 days 01:06:35.454545454 sec
+		Average overall waiting time: 7 days 12:11:21.818181818 sec
+		CTE: 0.01
+		Average total wt: 7 days 12:11:21.818181818 sec
+		Average creation wt: 4 days 01:32:27.272727272 sec
+		Average ready wt: 3 days 10:29:54.545454545 sec
+		Average other wt: 0 days 00:09:00 sec
+
+
+Batch formed by activities: ('Packing',)
+	Num occurrences: 277
+	Num occurrences in batch: 232
+	Frequency occurrences in batch: 83.75%
+	Batch size distribution: Counter({2: 16, 3: 13, 4: 13, 6: 6, 5: 4, 8: 2, 10: 1, 11: 1, 7: 1, 9: 1})
+	Average overall processing time: 0 days 01:00:00 sec
+	Average overall waiting time: 14 days 02:30:20.689655172 sec
+	CTE: 0.00
+	Average total wt: 14 days 02:30:20.689655172 sec
+	Average creation wt: 10 days 08:34:28.189655172 sec
+	Average ready wt: 3 days 17:55:52.500000 sec
+	Average other wt: 0 days 00:00:00 sec
+	- Batch type: Parallel
+		Num batch instances: 58
+		Batch size distribution: Counter({2: 16, 3: 13, 4: 13, 6: 6, 5: 4, 8: 2, 10: 1, 11: 1, 7: 1, 9: 1})
+		Num batch cases: 232
+		Frequency: 83.75%
+		Average overall processing time: 0 days 01:00:00 sec
+		Average overall waiting time: 14 days 02:30:20.689655172 sec
+		CTE: 0.00
+		Average total wt: 14 days 02:30:20.689655172 sec
+		Average creation wt: 10 days 08:34:28.189655172 sec
+		Average ready wt: 3 days 17:55:52.500000 sec
+		Average other wt: 0 days 00:00:00 sec
+
+
+Batch formed by activities: ('Round Grinding',)
+	Num occurrences: 774
+	Num occurrences in batch: 109
+	Frequency occurrences in batch: 14.08%
+	Batch size distribution: Counter({2: 50, 3: 3})
+	Average overall processing time: 0 days 04:20:58.899082568 sec
+	Average overall waiting time: 5 days 06:58:46.238532110 sec
+	CTE: 0.03
+	Average total wt: 5 days 06:58:46.238532110 sec
+	Average creation wt: 4 days 08:10:37.981651376 sec
+	Average ready wt: 0 days 21:43:35.229357798 sec
+	Average other wt: 0 days 01:04:33.027522935 sec
+	- Batch type: Parallel
+		Num batch instances: 3
+		Batch size distribution: Counter({2: 3})
+		Num batch cases: 6
+		Frequency: 0.78%
+		Average overall processing time: 0 days 03:53:00 sec
+		Average overall waiting time: 0 days 14:26:10 sec
+		CTE: 0.21
+		Average total wt: 0 days 14:26:10 sec
+		Average creation wt: 0 days 00:00:30 sec
+		Average ready wt: 0 days 14:25:40 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 20
+		Batch size distribution: Counter({2: 19, 3: 1})
+		Num batch cases: 41
+		Frequency: 5.30%
+		Average overall processing time: 0 days 02:30:55.609756097 sec
+		Average overall waiting time: 10 days 12:40:48.292682926 sec
+		CTE: 0.01
+		Average total wt: 10 days 12:40:48.292682926 sec
+		Average creation wt: 8 days 12:09:05.853658536 sec
+		Average ready wt: 1 days 23:16:10.243902439 sec
+		Average other wt: 0 days 01:15:32.195121951 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 30
+		Batch size distribution: Counter({2: 28, 3: 2})
+		Num batch cases: 62
+		Frequency: 8.01%
+		Average overall processing time: 0 days 05:36:28.064516129 sec
+		Average overall waiting time: 2 days 06:44:46.451612903 sec
+		CTE: 0.09
+		Average total wt: 2 days 06:44:46.451612903 sec
+		Average creation wt: 2 days 00:08:45.483870967 sec
+		Average ready wt: 0 days 05:32:29.032258064 sec
+		Average other wt: 0 days 01:03:31.935483870 sec
+
+
+Batch formed by activities: ('Turning',)
+	Num occurrences: 85
+	Num occurrences in batch: 2
+	Frequency occurrences in batch: 2.35%
+	Batch size distribution: Counter({2: 1})
+	Average overall processing time: 0 days 04:18:00 sec
+	Average overall waiting time: 0 days 09:40:00 sec
+	CTE: 0.31
+	Average total wt: 0 days 09:40:00 sec
+	Average creation wt: 0 days 05:25:00 sec
+	Average ready wt: 0 days 00:00:00 sec
+	Average other wt: 0 days 04:15:00 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 1
+		Batch size distribution: Counter({2: 1})
+		Num batch cases: 2
+		Frequency: 2.35%
+		Average overall processing time: 0 days 04:18:00 sec
+		Average overall waiting time: 0 days 09:40:00 sec
+		CTE: 0.31
+		Average total wt: 0 days 09:40:00 sec
+		Average creation wt: 0 days 05:25:00 sec
+		Average ready wt: 0 days 00:00:00 sec
+		Average other wt: 0 days 04:15:00 sec
+
+
+Batch formed by activities: ('Turning & Milling',)
+	Num occurrences: 592
+	Num occurrences in batch: 271
+	Frequency occurrences in batch: 45.78%
+	Batch size distribution: Counter({2: 104, 3: 21})
+	Average overall processing time: 0 days 06:19:08.413284132 sec
+	Average overall waiting time: 0 days 15:50:50.479704797 sec
+	CTE: 0.29
+	Average total wt: 0 days 15:50:50.479704797 sec
+	Average creation wt: 0 days 11:05:46.937269372 sec
+	Average ready wt: 0 days 04:11:44.059040590 sec
+	Average other wt: 0 days 00:33:19.483394833 sec
+	- Batch type: Parallel
+		Num batch instances: 3
+		Batch size distribution: Counter({2: 3})
+		Num batch cases: 6
+		Frequency: 1.01%
+		Average overall processing time: 0 days 14:30:00 sec
+		Average overall waiting time: 0 days 08:10:10 sec
+		CTE: 0.64
+		Average total wt: 0 days 08:10:10 sec
+		Average creation wt: 0 days 00:04:10 sec
+		Average ready wt: 0 days 08:06:00 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 8
+		Batch size distribution: Counter({2: 8})
+		Num batch cases: 16
+		Frequency: 2.70%
+		Average overall processing time: 0 days 03:33:56.250000 sec
+		Average overall waiting time: 3 days 03:24:30 sec
+		CTE: 0.05
+		Average total wt: 3 days 03:24:30 sec
+		Average creation wt: 2 days 18:29:52.500000 sec
+		Average ready wt: 0 days 07:42:30 sec
+		Average other wt: 0 days 01:12:07.500000 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 114
+		Batch size distribution: Counter({2: 93, 3: 21})
+		Num batch cases: 249
+		Frequency: 42.06%
+		Average overall processing time: 0 days 06:17:55.662650602 sec
+		Average overall waiting time: 0 days 12:12:18.554216867 sec
+		CTE: 0.34
+		Average total wt: 0 days 12:12:18.554216867 sec
+		Average creation wt: 0 days 07:48:07.710843373 sec
+		Average ready wt: 0 days 03:52:32.771084337 sec
+		Average other wt: 0 days 00:31:38.072289156 sec
+
+
+Batch formed by activities: ('Turning & Milling Q.C.',)
+	Num occurrences: 522
+	Num occurrences in batch: 145
+	Frequency occurrences in batch: 27.78%
+	Batch size distribution: Counter({2: 65, 3: 5})
+	Average overall processing time: 0 days 01:40:04.965517241 sec
+	Average overall waiting time: 2 days 16:58:13.655172413 sec
+	CTE: 0.03
+	Average total wt: 2 days 16:58:13.655172413 sec
+	Average creation wt: 1 days 20:26:51.310344827 sec
+	Average ready wt: 0 days 19:55:57.103448275 sec
+	Average other wt: 0 days 00:35:25.241379310 sec
+	- Batch type: Parallel
+		Num batch instances: 2
+		Batch size distribution: Counter({2: 2})
+		Num batch cases: 4
+		Frequency: 0.77%
+		Average overall processing time: 0 days 01:15:00 sec
+		Average overall waiting time: 1 days 09:12:45 sec
+		CTE: 0.04
+		Average total wt: 1 days 09:12:45 sec
+		Average creation wt: 1 days 02:49:45 sec
+		Average ready wt: 0 days 06:23:00 sec
+		Average other wt: 0 days 00:00:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 25
+		Batch size distribution: Counter({2: 23, 3: 2})
+		Num batch cases: 52
+		Frequency: 9.96%
+		Average overall processing time: 0 days 01:35:08.076923076 sec
+		Average overall waiting time: 2 days 02:03:15 sec
+		CTE: 0.03
+		Average total wt: 2 days 02:03:15 sec
+		Average creation wt: 1 days 00:24:38.076923076 sec
+		Average ready wt: 1 days 00:52:09.230769230 sec
+		Average other wt: 0 days 00:46:27.692307692 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 43
+		Batch size distribution: Counter({2: 40, 3: 3})
+		Num batch cases: 89
+		Frequency: 17.05%
+		Average overall processing time: 0 days 01:44:06.067415730 sec
+		Average overall waiting time: 3 days 03:06:46.516853932 sec
+		CTE: 0.02
+		Average total wt: 3 days 03:06:46.516853932 sec
+		Average creation wt: 2 days 08:56:47.191011235 sec
+		Average ready wt: 0 days 17:39:25.617977528 sec
+		Average other wt: 0 days 00:30:33.707865168 sec
+
+
+Batch formed by activities: ('Turning Q.C.',)
+	Num occurrences: 55
+	Num occurrences in batch: 6
+	Frequency occurrences in batch: 10.91%
+	Batch size distribution: Counter({2: 3})
+	Average overall processing time: 0 days 01:42:10 sec
+	Average overall waiting time: 6 days 12:36:30 sec
+	CTE: 0.01
+	Average total wt: 6 days 12:36:30 sec
+	Average creation wt: 0 days 06:26:00 sec
+	Average ready wt: 6 days 05:58:00 sec
+	Average other wt: 0 days 00:12:30 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 2
+		Batch size distribution: Counter({2: 2})
+		Num batch cases: 4
+		Frequency: 7.27%
+		Average overall processing time: 0 days 00:50:15 sec
+		Average overall waiting time: 1 days 07:56:00 sec
+		CTE: 0.03
+		Average total wt: 1 days 07:56:00 sec
+		Average creation wt: 0 days 08:04:30 sec
+		Average ready wt: 0 days 23:33:00 sec
+		Average other wt: 0 days 00:18:30 sec
+	- Batch type: Concurrent task-based
+		Num batch instances: 1
+		Batch size distribution: Counter({2: 1})
+		Num batch cases: 2
+		Frequency: 3.64%
+		Average overall processing time: 0 days 03:26:00 sec
+		Average overall waiting time: 16 days 21:57:30 sec
+		CTE: 0.01
+		Average total wt: 16 days 21:57:30 sec
+		Average creation wt: 0 days 03:09:00 sec
+		Average ready wt: 16 days 18:48:00 sec
+		Average other wt: 0 days 00:00:30 sec
+
+
+Batch formed by activities: ('Turning Rework',)
+	Num occurrences: 3
+	Num occurrences in batch: 2
+	Frequency occurrences in batch: 66.67%
+	Batch size distribution: Counter({2: 1})
+	Average overall processing time: 0 days 03:15:00 sec
+	Average overall waiting time: 8 days 15:36:00 sec
+	CTE: 0.02
+	Average total wt: 8 days 15:36:00 sec
+	Average creation wt: 6 days 05:24:00 sec
+	Average ready wt: 2 days 09:27:00 sec
+	Average other wt: 0 days 00:45:00 sec
+	- Batch type: Sequential task-based
+		Num batch instances: 1
+		Batch size distribution: Counter({2: 1})
+		Num batch cases: 2
+		Frequency: 66.67%
+		Average overall processing time: 0 days 03:15:00 sec
+		Average overall waiting time: 8 days 15:36:00 sec
+		CTE: 0.02
+		Average total wt: 8 days 15:36:00 sec
+		Average creation wt: 6 days 05:24:00 sec
+		Average ready wt: 2 days 09:27:00 sec
+		Average other wt: 0 days 00:45:00 sec
