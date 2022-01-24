@@ -49,9 +49,9 @@ def inject_batches(
         latest_start = None
         latest_end = None
         batch_type = random.choice(batch_types)
-        count_batches[batch_types.index(batch_type)] += 1
         # If batch type is None or the groups has a different length, skip this group
         if (batch_type is not None) and (len(batch_instance) == batch_size):
+            count_batches[batch_types.index(batch_type)] += 1
             # For each activity instance in the batch instance
             for activity_index, activity_instance in batch_instance.iterrows():
                 # Calculate the time to displace the execution of the activity in order to force the batch
