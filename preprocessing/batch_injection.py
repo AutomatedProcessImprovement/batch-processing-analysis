@@ -190,7 +190,7 @@ def _calculate_enabled_timed(event_log: pd.DataFrame, log_ids: EventLogIDs):
         event_log.loc[indexes, log_ids.enabled_time] = enabled_times
 
 
-def _main_batch_injection(preprocessed_log_path: str):
+def _main_batch_injection(preprocessed_log_path: str, output_log_path: str):
     log_ids = EventLogIDs()
     # Read and preprocess event log
     event_log = pd.read_csv(preprocessed_log_path)
@@ -236,9 +236,10 @@ def _main_batch_injection(preprocessed_log_path: str):
         batch_types=[_BatchType.SEQUENTIAL, _BatchType.CONCURRENT, None]
     )
     _calculate_enabled_timed(batched_event_log, log_ids)
-    batched_event_log.to_csv(preprocessed_log_path.replace(".csv.gz", "_batched.csv"), encoding='utf-8', index=False)
+    batched_event_log.to_csv(output_log_path, encoding='utf-8', index=False, compression='gzip')
 
 
 if __name__ == '__main__':
-    log_path = "C:/Users/David Chapela/PycharmProjects/start-time-estimator/event_logs/Loan_Application.csv.gz"
-    _main_batch_injection(log_path)
+    input_path = "path_to_original_log"
+    output_path = "path_to_batched_log"
+    _main_batch_injection(input_path, output_path)
