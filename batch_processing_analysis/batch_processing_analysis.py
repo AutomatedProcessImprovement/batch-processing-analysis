@@ -2,8 +2,8 @@ from datetime import timedelta
 
 import pandas as pd
 from concurrency_oracle import HeuristicsConcurrencyOracle
-from config import Configuration as StartTimeConfiguration
-from config import EventLogIDs as StartTimeEventLogIDs
+from start_time_config import Configuration as StartTimeConfiguration
+from start_time_config import EventLogIDs as StartTimeEventLogIDs
 
 from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
