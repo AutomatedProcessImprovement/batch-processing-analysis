@@ -12,7 +12,7 @@ Given an event log as input (Pandas DataFrame), this technique:
 
 - **Python v3.9.5+**
 - **PIP v21.1.2+**
-- Dependencies: check `requirements.txt`
+- Dependencies: [This package](https://github.com/AutomatedProcessImprovement/start-time-estimator) and those listed in `requirements.txt`
 - External: **R v4.1.2+** (check R dependencies in `external/batch-detection/batch_detection.R`)
 
 ## Basic Usage
