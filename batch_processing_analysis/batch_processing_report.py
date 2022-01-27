@@ -35,6 +35,11 @@ def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs)
         # If not already calculated, get the number of times the activities of this batch were executed (batched or not)
         if batch_report['total_occurrences'] == 0:
             batch_report['total_occurrences'] = get_batch_activities_number_executions(event_log, batch_instance, log_ids)
+            if batch_report['total_occurrences'] == 0:
+                print("An error occurred while trying to calculate the number of batch executions. "
+                      "Probably one of the identified batches is formed by many executions of the same activity. "
+                      "Setting 1 as number of executions, this will alter the frequency statistics.")
+                batch_report['total_occurrences'] = 1
         # Update num instances
         batch_type_stats['num_instances'] += 1
         batch_type_stats['batch_sizes'] += [len(batch_instance[log_ids.case].unique())]
