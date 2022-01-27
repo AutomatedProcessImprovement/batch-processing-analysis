@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='batch_processing_analysis',
-    version='0.1.0',
+    version='1.0.0',
     packages=find_packages(where='batch_processing_analysis'),
     package_dir={"": "batch_processing_analysis"},
     include_package_data=True,
