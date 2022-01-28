@@ -11,12 +11,12 @@ import random
 
 import numpy as np
 import pandas as pd
-from concurrency_oracle import HeuristicsConcurrencyOracle
+from estimate_start_times.concurrency_oracle import HeuristicsConcurrencyOracle
+from estimate_start_times.config import Configuration as StartTimeConfiguration
+from estimate_start_times.config import EventLogIDs as StartTimeEventLogIDs
 from pandas import Timedelta
-from start_time_config import Configuration as StartTimeConfiguration
-from start_time_config import EventLogIDs as StartTimeEventLogIDs
 
-from batch_config import EventLogIDs
+from batch_processing_analysis.batch_config import EventLogIDs
 
 
 class _BatchType(enum.Enum):

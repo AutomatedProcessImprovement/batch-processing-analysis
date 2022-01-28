@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def get_project_dir() -> Path:
-    return Path(os.path.dirname(__file__)).parent
+    return Path(os.path.dirname(__file__)).parent.parent
 
 
 class ActivationRulesMode(enum.Enum):
@@ -81,6 +81,7 @@ class Configuration:
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
+    PATH_LOGS_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("logs")
     PATH_BATCH_DETECTION_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("batch-detection")
     PATH_BATCH_DETECTION_SCRIPT = PATH_BATCH_DETECTION_FOLDER.joinpath("batch_detection.R")
     PATH_R_EXECUTABLE = "C:/Program Files/R/R-4.1.2/bin/Rscript.exe"

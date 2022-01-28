@@ -3,8 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='batch_processing_analysis',
     version='1.0.1',
-    packages=find_packages(where='batch_processing_analysis'),
-    package_dir={"": "batch_processing_analysis"},
+    package_dir={"": "src/batch_processing_analysis"},
     include_package_data=True,
     install_requires=[
         'numpy',
