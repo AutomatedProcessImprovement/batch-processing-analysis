@@ -4,8 +4,8 @@ from datetime import timedelta
 import pandas as pd
 from numpy import mean
 
-from batch_config import BatchType, EventLogIDs
-from batch_utils import get_batch_activities, get_batch_activities_number_executions
+from config import BatchType, EventLogIDs
+from utils import get_batch_activities, get_batch_activities_number_executions
 
 
 def summarize_batch_waiting_times(event_log: pd.DataFrame, log_ids: EventLogIDs) -> dict:

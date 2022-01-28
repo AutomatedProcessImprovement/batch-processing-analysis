@@ -16,7 +16,7 @@ from estimate_start_times.config import Configuration as StartTimeConfiguration
 from estimate_start_times.config import EventLogIDs as StartTimeEventLogIDs
 from pandas import Timedelta
 
-from batch_processing_analysis.batch_config import EventLogIDs
+from batch_processing_analysis.config import EventLogIDs
 
 
 class _BatchType(enum.Enum):

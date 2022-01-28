@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import wittgenstein as lw
 
-from batch_config import Configuration, ActivationRulesMode
-from batch_utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
+from config import Configuration, ActivationRulesMode
+from utils import get_batch_instance_start_time, get_batch_case_enabled_time, get_workload, get_batch_activities, \
     get_batch_instance_enabled_time
 
 

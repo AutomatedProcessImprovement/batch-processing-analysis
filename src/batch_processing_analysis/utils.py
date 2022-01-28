@@ -3,7 +3,7 @@ from datetime import timedelta
 import pandas as pd
 from pandas import Timestamp
 
-from batch_config import EventLogIDs
+from config import EventLogIDs
 
 
 def get_batch_activities(batch_events: pd.DataFrame, log_ids: EventLogIDs) -> tuple:

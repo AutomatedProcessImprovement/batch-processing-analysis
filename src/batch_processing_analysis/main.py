@@ -1,13 +1,13 @@
 import pandas as pd
 
 from batch_activation_rules import ActivationRulesDiscoverer
-from batch_config import Configuration
 from batch_processing_analysis import BatchProcessingAnalysis
 from batch_processing_report import summarize_batch_waiting_times, print_batch_waiting_times_report
+from config import Configuration
 
 
 def main():
-    # config = Configuration(min_batch_instance_size=10)  # Restrict batch size to min 10 cases (see batch_config.py)
+    # config = Configuration(min_batch_instance_size=10)  # Restrict batch size to min 10 cases (see config.py)
     config = Configuration()
     preprocessed_log_path = config.PATH_LOGS_FOLDER.joinpath("Production.csv.gz")
     # Read and preprocess event log
