@@ -1,9 +1,9 @@
 from datetime import timedelta
 
 import pandas as pd
-from concurrency_oracle import HeuristicsConcurrencyOracle
-from start_time_config import Configuration as StartTimeConfiguration
-from start_time_config import EventLogIDs as StartTimeEventLogIDs
+from estimate_start_times.concurrency_oracle import HeuristicsConcurrencyOracle
+from estimate_start_times.config import Configuration as StartTimeConfiguration
+from estimate_start_times.config import EventLogIDs as StartTimeEventLogIDs
 
 from batch_config import Configuration
 from batch_processing_discovery import discover_batches_martins21
@@ -40,18 +40,7 @@ class BatchProcessingAnalysis:
 
     def analyze_batches(self) -> pd.DataFrame:
         # Discover activity instance enabled times
-        for (batch_key, trace) in self.batch_event_log.groupby([self.log_ids.case]):
-            trace_start_time = trace[self.log_ids.start_time].min()
-            indexes = []
-            enabled_times = []
-            for index, event in trace.iterrows():
-                indexes += [index]
-                enabled_time = self.concurrency_oracle.enabled_since(trace, event)
-                if enabled_time != self.concurrency_oracle.non_estimated_time:
-                    enabled_times += [enabled_time]
-                else:
-                    enabled_times += [trace_start_time]
-            self.batch_event_log.loc[indexes, self.log_ids.enabled_time] = enabled_times
+        self.concurrency_oracle.add_enabled_times(self.batch_event_log)
         # Discover batches
         self.batch_event_log = discover_batches_martins21(self.batch_event_log, self.config)
         # Calculate batching waiting times
