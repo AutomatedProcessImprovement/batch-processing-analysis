@@ -217,7 +217,7 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
         index=False,
         compression='gzip')
     # Run Martins 2021 batching discovery technique
-    subprocess.call(
+    subprocess.run(
         [config.PATH_R_EXECUTABLE,
          config.PATH_BATCH_DETECTION_SCRIPT,
          preprocessed_log_path,
@@ -229,8 +229,7 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
          config.log_ids.enabled_time,
          config.log_ids.start_time,
          config.log_ids.end_time,
-         config.log_ids.resource],
-        shell=True
+         config.log_ids.resource]
     )
     # Read batch event log
     event_log_with_batches = pd.read_csv(batched_log_path)

@@ -84,4 +84,5 @@ class Configuration:
     PATH_LOGS_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("logs")
     PATH_BATCH_DETECTION_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("batch-detection")
     PATH_BATCH_DETECTION_SCRIPT = PATH_BATCH_DETECTION_FOLDER.joinpath("batch_detection.R")
-    PATH_R_EXECUTABLE = "C:/Program Files/R/R-4.1.2/bin/Rscript.exe"
+    # PATH_R_EXECUTABLE = "/usr/local/bin/Rscript"  # Mac & Linux
+    PATH_R_EXECUTABLE = "C:\\Program Files\\R\\R-4.1.2\\bin\\Rscript.exe"  # Windows

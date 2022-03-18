@@ -35,7 +35,7 @@ def main():
         else:
             print("\n\nBatch: {}: No rules could match the specified criterion (support >= {}).".format(key, config.min_rule_support))
     # Write log with WT info to file
-    batch_event_log.to_csv(config.PATH_LOGS_FOLDER.joinpath("Production_WTs.csv.gz", encoding='utf-8', index=False, compression='gzip'))
+    batch_event_log.to_csv(config.PATH_LOGS_FOLDER.joinpath("Production_WTs.csv.gz"), encoding='utf-8', index=False, compression='gzip')
 
 
 if __name__ == '__main__':
