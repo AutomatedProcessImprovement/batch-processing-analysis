@@ -8,9 +8,8 @@
 # install.packages('arules')
 # install.packages('arulesSequences')
 # install.packages('bupaR')
-
-### BAMA (Batch Activity Mining Algorithm)
-### https://github.com/nielsmartin/bama
+### BAMA (Batch Activity Mining Algorithm) - https://github.com/nielsmartin/bama
+### Unzip from 'https://zenodo.org/record/3908595#.Yjs7KOdByUk' and run install command as follows:
 # install.packages('nielsmartin-bama-bbcc130', repos = NULL, type = "source")
 
 
