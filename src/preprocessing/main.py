@@ -1,8 +1,8 @@
 import pandas as pd
 
-from batch_activation_rules import ActivationRulesDiscoverer
-from batch_processing_analysis import BatchProcessingAnalysis
-from batch_processing_report import summarize_batch_waiting_times, print_batch_waiting_times_report
+from batch_processing_analysis.batch_activation_rules import ActivationRulesDiscoverer
+from batch_processing_analysis.batch_processing_analysis import BatchProcessingAnalysis
+from batch_processing_analysis.batch_processing_report import summarize_batch_waiting_times, print_batch_waiting_times_report
 from config import Configuration
 
 
@@ -16,10 +16,16 @@ def main():
     event_log[config.log_ids.end_time] = pd.to_datetime(event_log[config.log_ids.end_time], utc=True)
     # Run main analysis
     batch_event_log = BatchProcessingAnalysis(event_log, config).analyze_batches()
+    # Write log with WT info to file
+    batch_event_log.to_csv(config.PATH_LOGS_FOLDER.joinpath("Production_WTs.csv.gz"), encoding='utf-8', index=False, compression='gzip')
+    # --REPORT WT DATA-- #
+    # Get report with summarized WT data
     batch_report = summarize_batch_waiting_times(batch_event_log, config.log_ids)
+    # Print report info
     print_batch_waiting_times_report(batch_report)
     # Discover activation rules
     rules = ActivationRulesDiscoverer(batch_event_log, config).get_activation_rules(config.activation_rules_type)
+    # Print activation rules in readable format
     for key in rules:
         if len(rules[key]) > 0:
             ruleset_str = str(
@@ -34,8 +40,6 @@ def main():
             ))
         else:
             print("\n\nBatch: {}: No rules could match the specified criterion (support >= {}).".format(key, config.min_rule_support))
-    # Write log with WT info to file
-    batch_event_log.to_csv(config.PATH_LOGS_FOLDER.joinpath("Production_WTs.csv.gz"), encoding='utf-8', index=False, compression='gzip')
 
 
 if __name__ == '__main__':
