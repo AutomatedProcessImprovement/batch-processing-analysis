@@ -9,64 +9,75 @@ from utils import get_batch_instance_start_time, get_batch_case_enabled_time
 
 
 def _remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
-    found = True  # Flag to check for "wrong" cases until all of them are fine
     # ----------------------------------- #
     # --- Process single task batches --- #
     # ----------------------------------- #
-    # While at least one case with "wrong" enabled times has been found, launch analysis
-    while found:
-        found = False
+    batch_instances_to_analyze = list(event_log_with_batches['batch_number'].unique())  # By default, analyze all batches
+    # While there are batch instances to analyze, launch analysis (stops once all have been analyzed and none has been split)
+    while batch_instances_to_analyze:
+        new_batch_instances = []  # Batch instances split due to a wrong enabled time
         # Get activity instances of single-task batches
         single_task_batch_events = event_log_with_batches[
-            pd.isna(event_log_with_batches['batch_subprocess_type']) & ~pd.isna(event_log_with_batches['batch_type'])
+            pd.isna(event_log_with_batches['batch_subprocess_type']) &
+            ~pd.isna(event_log_with_batches['batch_type']) &
+            event_log_with_batches['batch_number'].isin(batch_instances_to_analyze)
             ]
         # For each single-task batch instance
         for (batch_instance_key, batch_instance) in single_task_batch_events.groupby(['batch_number']):
-            batch_instance_start = get_batch_instance_start_time(batch_instance, log_ids)
-            batch_case_keys = []
-            # Check if any batch case has the enabled time after the batch instance start time
-            for (batch_case_key, batch_case) in batch_instance.groupby([log_ids.case]):
-                batch_case_enabled = get_batch_case_enabled_time(batch_case, log_ids)
-                if batch_instance_start < batch_case_enabled:
-                    # The batch instance started before the batch case was enabled -> store key to separate the batch case
-                    batch_case_keys += [batch_case_key]
-            if len(batch_case_keys) > 0:
-                found = True
-                # Declare as a new batch instance those batch cases with "wrong" enabled time
-                new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
-                event_log_with_batches.loc[
-                    (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
-                    (event_log_with_batches['batch_number'] == batch_instance_key),
-                    'batch_number'
-                ] = new_batch_instance_key
+            # If the batch instance is not formed only by one case
+            if len(batch_instance[log_ids.case].unique()) > 1:
+                batch_instance_start = get_batch_instance_start_time(batch_instance, log_ids)
+                batch_case_keys = []
+                # Check if any batch case has the enabled time after the batch instance start time
+                for (batch_case_key, batch_case) in batch_instance.groupby([log_ids.case]):
+                    batch_case_enabled = get_batch_case_enabled_time(batch_case, log_ids)
+                    if batch_instance_start < batch_case_enabled:
+                        # The batch instance started before the batch case was enabled -> store key to separate the batch case
+                        batch_case_keys += [batch_case_key]
+                if len(batch_case_keys) > 0:
+                    # Declare as a new batch instance those batch cases with "wrong" enabled time
+                    new_batch_instance_key = event_log_with_batches['batch_number'].max() + 1
+                    new_batch_instances += [new_batch_instance_key]
+                    event_log_with_batches.loc[
+                        (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
+                        (event_log_with_batches['batch_number'] == batch_instance_key),
+                        'batch_number'
+                    ] = new_batch_instance_key
+        batch_instances_to_analyze = new_batch_instances  # Only analyze the new ones in the next iteration
     # ---------------------------------- #
     # --- Process subprocess batches --- #
     # ---------------------------------- #
-    # While at least one case with "wrong" enabled times has been found, launch analysis
-    found = True
-    while found:
-        found = False
+    batch_instances_to_analyze = list(event_log_with_batches['batch_subprocess_number'].unique())  # By default, analyze all batches
+    # While there are batch instances to analyze, launch analysis (stops once all have been analyzed and none has been split)
+    while batch_instances_to_analyze:
+        new_batch_instances = []  # Batch instances split due to a wrong enabled time
         # Get activity instances of single-task batches
-        subprocess_batch_events = event_log_with_batches[~pd.isna(event_log_with_batches['batch_subprocess_type'])]
+        subprocess_batch_events = event_log_with_batches[
+            ~pd.isna(event_log_with_batches['batch_subprocess_type']) &
+            event_log_with_batches['batch_subprocess_number'].isin(batch_instances_to_analyze)
+            ]
         # For each single-task batch instance
         for (batch_instance_key, batch_instance) in subprocess_batch_events.groupby(['batch_subprocess_number']):
-            batch_instance_start = get_batch_instance_start_time(batch_instance, log_ids)
-            batch_case_keys = []
-            # Check if any batch case has the enabled time after the batch instance start time
-            for (batch_case_key, batch_case) in batch_instance.groupby([log_ids.case]):
-                batch_case_enabled = get_batch_case_enabled_time(batch_case, log_ids)
-                if batch_instance_start < batch_case_enabled:
-                    # The batch instance started before the batch case was enabled -> store key to separate the batch case
-                    batch_case_keys += [batch_case_key]
-            if len(batch_case_keys) > 0:
-                found = True
-                # Declare as a new batch instance those batch cases with "wrong" enabled time
-                new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
-                event_log_with_batches.loc[
-                    (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
-                    (event_log_with_batches['batch_subprocess_number'] == batch_instance_key),
-                    'batch_subprocess_number'
-                ] = new_batch_instance_key
+            # If the batch instance is not formed only by one case
+            if len(batch_instance[log_ids.case].unique()) > 1:
+                batch_instance_start = get_batch_instance_start_time(batch_instance, log_ids)
+                batch_case_keys = []
+                # Check if any batch case has the enabled time after the batch instance start time
+                for (batch_case_key, batch_case) in batch_instance.groupby([log_ids.case]):
+                    batch_case_enabled = get_batch_case_enabled_time(batch_case, log_ids)
+                    if batch_instance_start < batch_case_enabled:
+                        # The batch instance started before the batch case was enabled -> store key to separate the batch case
+                        batch_case_keys += [batch_case_key]
+                if len(batch_case_keys) > 0:
+                    # Declare as a new batch instance those batch cases with "wrong" enabled time
+                    new_batch_instance_key = event_log_with_batches['batch_subprocess_number'].max() + 1
+                    new_batch_instances += [new_batch_instance_key]
+                    event_log_with_batches.loc[
+                        (event_log_with_batches[log_ids.case].isin(batch_case_keys)) &
+                        (event_log_with_batches['batch_subprocess_number'] == batch_instance_key),
+                        'batch_subprocess_number'
+                    ] = new_batch_instance_key
+        batch_instances_to_analyze = new_batch_instances  # Only analyze the new ones in the next iteration
 
 
 def _split_batch_with_different_resources(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
