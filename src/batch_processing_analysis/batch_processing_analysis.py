@@ -56,6 +56,11 @@ class BatchProcessingAnalysis:
         self.batch_event_log[self.log_ids.batch_creation_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_ready_wt] = timedelta(0)
         self.batch_event_log[self.log_ids.batch_other_wt] = timedelta(0)
+        # If report checkpoints is true, create columns for report
+        if self.config.report_batch_checkpoints:
+            self.batch_event_log[self.log_ids.batch_case_enabled] = pd.NaT
+            self.batch_event_log[self.log_ids.batch_instance_enabled] = pd.NaT
+            self.batch_event_log[self.log_ids.batch_start] = pd.NaT
         # Calculate waiting times
         batch_events = self.batch_event_log[~pd.isna(self.batch_event_log[self.log_ids.batch_id])]
         for (batch_key, batch_instance) in batch_events.groupby([self.log_ids.batch_id]):
@@ -88,3 +93,13 @@ class BatchProcessingAnalysis:
                      other_wt,
                      batch_pt,
                      batch_wt]
+                # If report checkpoints is true, add them to the event log
+                if self.config.report_batch_checkpoints:
+                    self.batch_event_log.loc[
+                        (self.batch_event_log[self.log_ids.batch_id] == batch_key) & (self.batch_event_log[self.log_ids.case] == case_key),
+                        [self.log_ids.batch_case_enabled,
+                         self.log_ids.batch_instance_enabled,
+                         self.log_ids.batch_start]
+                    ] = [case_first_event[self.log_ids.enabled_time],
+                         batch_last_enabled,
+                         batch_first_start]

@@ -41,6 +41,9 @@ class EventLogIDs:
     batch_creation_wt: str = 'batch_creation_wt'  # Batch case creation wt: time since batch case enablement until batch instance creation
     batch_ready_wt: str = 'batch_ready_wt'  # Batch instance ready waiting time: time since the batch instance is created until its start
     batch_other_wt: str = 'batch_other_wt'  # Batch case other waiting time: time since the batch instance start until the batch case start
+    batch_case_enabled: str = 'batch_case_enabled'  # Enablement time of the batch case
+    batch_instance_enabled: str = 'batch_instance_enabled'  # Enablement time of the batch instance (batch is created and ready)
+    batch_start: str = 'batch_start_time'  # First start time in the batch instance (batch processing starts)
 
 
 @dataclass
@@ -69,6 +72,8 @@ class Configuration:
                                             activation rules.
         num_batch_enabled_negative_events   Max number of non-activating events to generate in the batch cases enablement instants
                                             to extract the batch activation rules.
+        report_batch_checkpoints            Boolean value indicating if the checkpoints (batch created, ready, etc.) must be reported in
+                                            the event log.
     """
     log_ids: EventLogIDs = EventLogIDs()
     min_batch_instance_size: int = 2
@@ -78,6 +83,7 @@ class Configuration:
     min_rule_support: float = 0.1
     num_batch_ready_negative_events: int = 1
     num_batch_enabled_negative_events: int = 1
+    report_batch_checkpoints: bool = False
 
     PATH_PROJECT = get_project_dir()
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
