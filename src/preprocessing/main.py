@@ -1,8 +1,8 @@
 import pandas as pd
 
-from batch_processing_analysis.batch_activation_rules import ActivationRulesDiscoverer
-from batch_processing_analysis.batch_processing_analysis import BatchProcessingAnalysis
-from batch_processing_analysis.batch_processing_report import summarize_batch_waiting_times, print_batch_waiting_times_report
+from batch_processing_analysis.activation_rules import ActivationRulesDiscoverer
+from batch_processing_analysis.analysis import BatchProcessingAnalysis
+from batch_processing_analysis.reporting import summarize_batch_waiting_times, print_batch_waiting_times_report
 from config import Configuration
 
 

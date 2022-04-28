@@ -5,8 +5,8 @@ from estimate_start_times.concurrency_oracle import HeuristicsConcurrencyOracle
 from estimate_start_times.config import Configuration as StartTimeConfiguration
 from estimate_start_times.config import EventLogIDs as StartTimeEventLogIDs
 
-from batch_processing_discovery import discover_batches_martins21
 from config import Configuration
+from discovery import discover_batches_martins21
 from utils import get_batch_instance_enabled_time, get_batch_instance_start_time, get_naive_batch_case_processing_waiting_times
 
 
@@ -34,7 +34,7 @@ class BatchProcessingAnalysis:
                 end_time=self.log_ids.end_time,
                 resource=self.log_ids.resource,
             ),
-            consider_parallelism=True
+            consider_start_times=True
         )
         self.concurrency_oracle = HeuristicsConcurrencyOracle(self.event_log, start_time_config)
 

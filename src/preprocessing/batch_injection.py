@@ -179,7 +179,7 @@ def _calculate_enabled_timed(event_log: pd.DataFrame, log_ids: EventLogIDs):
             end_time=log_ids.end_time,
             resource=log_ids.resource,
         ),
-        consider_parallelism=True
+        consider_start_times=True
     )
     concurrency_oracle = HeuristicsConcurrencyOracle(event_log, start_time_config)
     for (batch_key, trace) in event_log.groupby([log_ids.case]):
