@@ -4,8 +4,8 @@ import subprocess
 import numpy as np
 import pandas as pd
 
-from config import Configuration, EventLogIDs, BatchType
-from utils import get_batch_instance_start_time, get_batch_case_enabled_time
+from .config import Configuration, EventLogIDs, BatchType
+from .utils import get_batch_instance_start_time, get_batch_case_enabled_time
 
 
 def _remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):

@@ -5,9 +5,9 @@ from estimate_start_times.concurrency_oracle import HeuristicsConcurrencyOracle
 from estimate_start_times.config import Configuration as StartTimeConfiguration
 from estimate_start_times.config import EventLogIDs as StartTimeEventLogIDs
 
-from config import Configuration
-from discovery import discover_batches_martins21
-from utils import get_batch_instance_enabled_time, get_batch_instance_start_time, get_naive_batch_case_processing_waiting_times
+from .config import Configuration
+from .discovery import discover_batches_martins21
+from .utils import get_batch_instance_enabled_time, get_batch_instance_start_time, get_naive_batch_case_processing_waiting_times
 
 
 class BatchProcessingAnalysis:
