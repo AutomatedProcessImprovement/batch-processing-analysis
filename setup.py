@@ -10,9 +10,4 @@ setup(
         'pandas',
         'wittgenstein'
     ],
-    entry_points={
-        'console_scripts': [
-            'batch_processing_analysis = main:main',
-        ]
-    }
 )
