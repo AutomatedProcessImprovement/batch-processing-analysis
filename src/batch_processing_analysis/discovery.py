@@ -1,11 +1,10 @@
-import os
 import subprocess
 
 import numpy as np
 import pandas as pd
 
 from .config import Configuration, EventLogIDs, BatchType
-from .utils import get_batch_instance_start_time, get_batch_case_enabled_time
+from .utils import get_batch_instance_start_time, get_batch_case_enabled_time, create_new_tmp_folder, delete_folder
 
 
 def _remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
@@ -209,8 +208,9 @@ def _unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: Even
 
 
 def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -> pd.DataFrame:
-    preprocessed_log_path = config.PATH_BATCH_DETECTION_FOLDER.joinpath("preprocessed_event_log.csv.gz")
-    batched_log_path = config.PATH_BATCH_DETECTION_FOLDER.joinpath("batched_event_log.csv")
+    tmp_folder = create_new_tmp_folder(config.PATH_OUTPUTS)
+    preprocessed_log_path = tmp_folder.joinpath("preprocessed_event_log.csv.gz")
+    batched_log_path = tmp_folder.joinpath("batched_event_log.csv")
     # Format event log
     preprocessed_event_log = event_log[[
         config.log_ids.case,
@@ -259,7 +259,6 @@ def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -
     # Reformat batches to standard
     _unify_batch_information(event_log_with_batches, config.log_ids)
     # Remove created files
-    os.remove(preprocessed_log_path)
-    os.remove(batched_log_path)
+    delete_folder(tmp_folder)
     # Return event log with batch information
     return event_log_with_batches

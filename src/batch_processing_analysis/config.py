@@ -86,6 +86,7 @@ class Configuration:
     report_batch_checkpoints: bool = False
 
     PATH_PROJECT = get_project_dir()
+    PATH_OUTPUTS = PATH_PROJECT.joinpath("outputs")
     PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
     PATH_LOGS_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("logs")
     PATH_BATCH_DETECTION_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("batch-detection")
