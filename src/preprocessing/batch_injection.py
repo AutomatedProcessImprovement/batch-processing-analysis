@@ -95,7 +95,6 @@ def inject_batches(
                 latest_start = new_start
                 latest_end = new_end
     # Return
-    print(count_batches)
     return batched_event_log
 
 
@@ -184,16 +183,12 @@ def _calculate_enabled_timed(event_log: pd.DataFrame, log_ids: EventLogIDs):
     concurrency_oracle = HeuristicsConcurrencyOracle(event_log, start_time_config)
     for (batch_key, trace) in event_log.groupby([log_ids.case]):
         trace_start_time = trace[log_ids.start_time].min()
-        indexes = []
-        enabled_times = []
         for index, event in trace.iterrows():
-            indexes += [index]
             enabled_time = concurrency_oracle.enabled_since(trace, event)
             if enabled_time != concurrency_oracle.non_estimated_time:
-                enabled_times += [enabled_time]
+                event_log.loc[index, log_ids.enabled_time] = enabled_time
             else:
-                enabled_times += [trace_start_time]
-        event_log.loc[indexes, log_ids.enabled_time] = enabled_times
+                event_log.loc[index, log_ids.enabled_time] = trace_start_time
 
 
 def _main_batch_injection(preprocessed_log_path: str, output_log_path: str):
