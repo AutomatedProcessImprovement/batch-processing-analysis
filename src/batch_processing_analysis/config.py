@@ -1,11 +1,10 @@
 import enum
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
 
 def get_project_dir() -> Path:
-    return Path(os.path.dirname(__file__)).parent.parent
+    return Path.cwd().parent.parent
 
 
 class ActivationRulesMode(enum.Enum):

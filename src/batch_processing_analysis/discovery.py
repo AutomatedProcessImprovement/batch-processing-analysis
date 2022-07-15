@@ -1,10 +1,12 @@
 import subprocess
+import tempfile
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from .config import Configuration, EventLogIDs, BatchType
-from .utils import get_batch_instance_start_time, get_batch_case_enabled_time, create_new_tmp_folder, delete_folder
+from .utils import get_batch_instance_start_time, get_batch_case_enabled_time
 
 
 def _remove_wrong_enabled_time_cases(event_log_with_batches: pd.DataFrame, log_ids: EventLogIDs):
@@ -208,57 +210,56 @@ def _unify_batch_information(event_log_with_batches: pd.DataFrame, log_ids: Even
 
 
 def discover_batches_martins21(event_log: pd.DataFrame, config: Configuration) -> pd.DataFrame:
-    tmp_folder = create_new_tmp_folder(config.PATH_OUTPUTS)
-    preprocessed_log_path = tmp_folder.joinpath("preprocessed_event_log.csv.gz")
-    batched_log_path = tmp_folder.joinpath("batched_event_log.csv")
-    # Format event log
-    preprocessed_event_log = event_log[[
-        config.log_ids.case,
-        config.log_ids.activity,
-        config.log_ids.enabled_time,
-        config.log_ids.start_time,
-        config.log_ids.end_time,
-        config.log_ids.resource
-    ]]
-    # Export event log
-    preprocessed_event_log.to_csv(
-        preprocessed_log_path,
-        date_format="%Y-%m-%d %H:%M:%S.%f",
-        encoding='utf-8',
-        index=False,
-        compression='gzip')
-    # Run Martins 2021 batching discovery technique
-    subprocess.run(
-        [config.PATH_R_EXECUTABLE,
-         config.PATH_BATCH_DETECTION_SCRIPT,
-         preprocessed_log_path,
-         batched_log_path,
-         "0",
-         config.batch_discovery_subsequence_type,
-         config.log_ids.case,
-         config.log_ids.activity,
-         config.log_ids.enabled_time,
-         config.log_ids.start_time,
-         config.log_ids.end_time,
-         config.log_ids.resource]
-    )
-    # Read batch event log
-    event_log_with_batches = pd.read_csv(batched_log_path)
-    # Preprocess batch event log
-    event_log_with_batches[config.log_ids.enabled_time] = pd.to_datetime(event_log_with_batches[config.log_ids.enabled_time], utc=True)
-    event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
-    event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
-    # Split subprocess batch instances with different task-level batch type
-    _split_batches_with_different_type(event_log_with_batches)
-    # Split batch instances with different resources
-    _split_batch_with_different_resources(event_log_with_batches, config.log_ids)
-    # Remove batch cases with enable time before first batch start time (negative ready batch wt)
-    _remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
-    # Remove all batch instances formed only by one case
-    _remove_low_size_batch_instances(event_log_with_batches, config.log_ids, config.min_batch_instance_size)
-    # Reformat batches to standard
-    _unify_batch_information(event_log_with_batches, config.log_ids)
-    # Remove created files
-    delete_folder(tmp_folder)
+    with tempfile.TemporaryDirectory() as tmp_folder_path:
+        tmp_folder = Path(tmp_folder_path)
+        preprocessed_log_path = tmp_folder.joinpath("preprocessed_event_log.csv.gz")
+        batched_log_path = tmp_folder.joinpath("batched_event_log.csv")
+        # Format event log
+        preprocessed_event_log = event_log[[
+            config.log_ids.case,
+            config.log_ids.activity,
+            config.log_ids.enabled_time,
+            config.log_ids.start_time,
+            config.log_ids.end_time,
+            config.log_ids.resource
+        ]]
+        # Export event log
+        preprocessed_event_log.to_csv(
+            preprocessed_log_path,
+            date_format="%Y-%m-%d %H:%M:%S.%f",
+            encoding='utf-8',
+            index=False,
+            compression='gzip')
+        # Run Martins 2021 batching discovery technique
+        subprocess.run(
+            [config.PATH_R_EXECUTABLE,
+             config.PATH_BATCH_DETECTION_SCRIPT,
+             preprocessed_log_path,
+             batched_log_path,
+             "0",
+             config.batch_discovery_subsequence_type,
+             config.log_ids.case,
+             config.log_ids.activity,
+             config.log_ids.enabled_time,
+             config.log_ids.start_time,
+             config.log_ids.end_time,
+             config.log_ids.resource]
+        )
+        # Read batch event log
+        event_log_with_batches = pd.read_csv(batched_log_path)
+        # Preprocess batch event log
+        event_log_with_batches[config.log_ids.enabled_time] = pd.to_datetime(event_log_with_batches[config.log_ids.enabled_time], utc=True)
+        event_log_with_batches[config.log_ids.start_time] = pd.to_datetime(event_log_with_batches[config.log_ids.start_time], utc=True)
+        event_log_with_batches[config.log_ids.end_time] = pd.to_datetime(event_log_with_batches[config.log_ids.end_time], utc=True)
+        # Split subprocess batch instances with different task-level batch type
+        _split_batches_with_different_type(event_log_with_batches)
+        # Split batch instances with different resources
+        _split_batch_with_different_resources(event_log_with_batches, config.log_ids)
+        # Remove batch cases with enable time before first batch start time (negative ready batch wt)
+        _remove_wrong_enabled_time_cases(event_log_with_batches, config.log_ids)
+        # Remove all batch instances formed only by one case
+        _remove_low_size_batch_instances(event_log_with_batches, config.log_ids, config.min_batch_instance_size)
+        # Reformat batches to standard
+        _unify_batch_information(event_log_with_batches, config.log_ids)
     # Return event log with batch information
     return event_log_with_batches
