@@ -5,7 +5,7 @@ import pandas as pd
 from estimate_start_times.concurrency_oracle import HeuristicsConcurrencyOracle
 from estimate_start_times.config import Configuration
 
-from config import EventLogIDs
+from batch_processing_analysis.config import EventLogIDs
 from preprocessing.batch_injection import _calculate_enabled_timed, inject_batches, _BatchType
 
 
