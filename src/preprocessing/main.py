@@ -17,7 +17,7 @@ def main():
     # Run main analysis
     batch_event_log = BatchProcessingAnalysis(event_log, config).analyze_batches()
     # Write log with WT info to file
-    batch_event_log.to_csv(config.PATH_LOGS_FOLDER.joinpath("Production_WTs.csv.gz"), encoding='utf-8', index=False, compression='gzip')
+    # batch_event_log.to_csv(config.PATH_LOGS_FOLDER.joinpath("Production_WTs.csv.gz"), encoding='utf-8', index=False, compression='gzip')
     # --REPORT WT DATA-- #
     # Get report with summarized WT data
     batch_report = summarize_batch_waiting_times(batch_event_log, config.log_ids)

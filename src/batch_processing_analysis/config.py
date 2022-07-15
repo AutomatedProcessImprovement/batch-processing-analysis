@@ -1,10 +1,7 @@
 import enum
+import os
 from dataclasses import dataclass
 from pathlib import Path
-
-
-def get_project_dir() -> Path:
-    return Path.cwd().parent.parent
 
 
 class ActivationRulesMode(enum.Enum):
@@ -84,11 +81,9 @@ class Configuration:
     num_batch_enabled_negative_events: int = 1
     report_batch_checkpoints: bool = False
 
-    PATH_PROJECT = get_project_dir()
+    PATH_PROJECT = Path(os.path.dirname(__file__)).parent.parent
     PATH_OUTPUTS = PATH_PROJECT.joinpath("outputs")
-    PATH_EXTERNAL_TOOLS = PATH_PROJECT.joinpath("external")
-    PATH_LOGS_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("logs")
-    PATH_BATCH_DETECTION_FOLDER = PATH_EXTERNAL_TOOLS.joinpath("batch-detection")
-    PATH_BATCH_DETECTION_SCRIPT = PATH_BATCH_DETECTION_FOLDER.joinpath("batch_detection.R")
+    PATH_LOGS_FOLDER = PATH_PROJECT.joinpath("logs")
+    PATH_BATCH_DETECTION_SCRIPT = Path(os.path.dirname(__file__)).joinpath("external").joinpath("batch_detection.R")
     # PATH_R_EXECUTABLE = "/usr/local/bin/Rscript"  # Mac & Linux
     PATH_R_EXECUTABLE = "C:\\Program Files\\R\\R-4.1.2\\bin\\Rscript.exe"  # Windows
